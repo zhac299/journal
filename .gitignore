@@ -1,2 +1,5 @@
 # Ignore node modules directory
 node_modules/
+
+# Hide config.env file with login credential to mongodb cluster
+server/config.env
