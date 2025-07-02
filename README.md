@@ -16,3 +16,12 @@ Used Dependencies:
 - postcss
 - autoprefixer
 - react-router-dom: adds client-side page routing to React
+
+To Run:
+BACKEND:
+cd server
+node --env-file=config.env server
+
+FRONTEND:
+cd client
+npm run dev
