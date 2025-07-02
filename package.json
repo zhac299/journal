@@ -1,0 +1,24 @@
+{
+  "name": "journal",
+  "version": "0.0.1",
+  "description": "a module for the self-dev app - other features include gym/fitness tracker and budget functions. this module is the journal module.",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zhac299/journal.git"
+  },
+  "keywords": [
+    "journal",
+    "self-development",
+    "improve"
+  ],
+  "author": "MHM",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zhac299/journal/issues"
+  },
+  "homepage": "https://github.com/zhac299/journal#readme"
+}
