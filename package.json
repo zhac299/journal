@@ -20,5 +20,10 @@
   "bugs": {
     "url": "https://github.com/zhac299/journal/issues"
   },
-  "homepage": "https://github.com/zhac299/journal#readme"
+  "homepage": "https://github.com/zhac299/journal#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "mongodb": "^6.17.0"
+  }
 }
