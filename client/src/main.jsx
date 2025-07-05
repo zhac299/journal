@@ -1,18 +1,16 @@
-import { StrictMode } from 'react'
 import * as React from 'react'
-import { createRoot } from 'react-dom/client'
-import * as ReactDOM from "react-dom/client"
 
 import {
   createBrowserRouter,
   RouterProvider,
 } from 'react-router-dom'
 
-import RoutineItem from './components/RoutineItem'
-import RoutineItemList from './components/RoutineItemList'
+import Task from './components/Task'
+import TaskList from './components/TaskList'
 
 import './index.css'
 import App from './App.jsx'
+import CurrentDate from './components/CurrentDate.jsx'
 
 const router = createBrowserRouter([
   {
@@ -21,7 +19,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <RoutineItemList />,
+        element: <CurrentDate />,
       },
     ],
   },
