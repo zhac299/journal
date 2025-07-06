@@ -1,5 +1,6 @@
 import * as React from 'react'
-
+import { createRoot } from 'react-dom/client'
+import { StrictMode } from 'react'
 import {
   createBrowserRouter,
   RouterProvider,
@@ -14,7 +15,7 @@ import CurrentDate from './components/CurrentDate.jsx'
 
 const router = createBrowserRouter([
   {
-    path:'/',
+    path: '/',
     element: <App />,
     children: [
       {
