@@ -1,14 +1,12 @@
 export default function CurrentDate() {
-    const today = Date.now();
+    const today = new Date();
     var currentWeek = getCurrentWeek();
-    const weekCommencing = "Week Commencing " + currentWeek;
 
     function getCurrentWeek() {
         if (today.getDay() == 1) return 'Monday ' + today.toDateString(); // current day is Monday
 
-        
         var isMonday = false;
-        var tillMonday = Date.now();
+        var tillMonday = new Date();
         if (tillMonday.getDay() > 1) {
            isMonday = false;
         } else {
@@ -20,12 +18,14 @@ export default function CurrentDate() {
             tillMonday--;
         }
 
-        return 'Monday ' + today.toDateString(); 
+        return tillMonday.toDateString();
     }
 
     return(
         <>
-        {{currentWeek}}
+        <div>
+            <h3>{currentWeek}</h3>
+        </div>
         </>
     );
 }
