@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 
 export default function Task() {
   const [tasks, setTasks] = useState([]);
+  const daysofWeek = ["M", "T", "W", "T", "F", "S", "S"];
 
   useEffect(() => {
     // Fetch task data from the server
@@ -27,7 +28,7 @@ export default function Task() {
         {tasks.map((task) => (
           task.type === "other" ? (
             <div className="flex justify-around basis-2/3 h-10 w-96 rounded-sm border border-black-600 shadow-md">
-              <div className="text-left indent-8 align-middle">
+              <div className="text-left align-middle">
                 {task.name}
               </div>
 
@@ -41,9 +42,20 @@ export default function Task() {
             </div>
           ) : (
             <div className="flex justify-around basis-2/3 h-10 w-150 rounded-sm border border-black-600 shadow-md">
-              <div className="text-left indent-8 align-middle">
+              <div className="text-left align-middle">
                 {task.name}
               </div>
+
+              {daysofWeek.map((day) => (
+                <div class="flex items-stretch  gap-2 justify-items-center">
+                  <div>
+                    {day}
+                  </div>
+                  <div class="self-end">
+                    <input type="checkbox" />
+                  </div>
+                </div>
+              ))}
 
               <div class="basis-6 self-end">
                 <img src="/remove.png" alt="Remove Sign"></img>
