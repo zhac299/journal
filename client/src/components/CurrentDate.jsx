@@ -3,7 +3,7 @@ export default function CurrentDate() {
     var currentWeek = getCurrentWeek();
 
     function getCurrentWeek() {
-        if (today.getDay() == 1) return 'Monday ' + today.toDateString(); // current day is Monday
+        if (today.getDay() == 1) return today.toDateString(); // current day is Monday
 
         var isMonday = false;
         var tillMonday = new Date();
