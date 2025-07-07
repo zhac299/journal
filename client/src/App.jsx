@@ -9,7 +9,6 @@ function App() {
   return (
     <>
       <div className="w-full p-6">
-        <CurrentDate />
         <Outlet />
       </div>
     </>
