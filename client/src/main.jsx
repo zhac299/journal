@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { createRoot } from 'react-dom/client'
 import { StrictMode } from 'react'
 import {
@@ -18,10 +17,10 @@ const router = createBrowserRouter([
     path: '/',
     element: <App />,
     children: [
-      {
+      {/*
         path: '/',
         element: <CurrentDate />,
-      },
+      */}
     ],
   },
 ])
