@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 export default function Task() {
-  const [tasks, setTasks] = useState([]);
+  var [tasks, setTasks] = useState([]);
   const daysofWeek = ["M", "T", "W", "T", "F", "S", "S"];
   const endpoint = "http://localhost:5050/"
 
@@ -55,49 +55,36 @@ export default function Task() {
       setOtherWIPTasks(other);
       console.log(other);
     }
-      getAllOtherWIPTasks();
-      return;
-    }, [otherWIPTasks.length]);
+    getAllOtherWIPTasks();
+    return;
+  }, [otherWIPTasks.length]);
 
   useEffect(() => {
     async function getAllOtherNWIPTasks() {
-    const response = await fetch(endpoint + "other/nwip");
-    if (!response.ok) {
-      const message = `An error occurred: ${response.statusText}`;
-      console.error(message);
-      return;
+      const response = await fetch(endpoint + "other/nwip");
+      if (!response.ok) {
+        const message = `An error occurred: ${response.statusText}`;
+        console.error(message);
+        return;
+      }
+      let other = await response.json();
+      setOtherNWIPTasks(other);
+      console.log(other);
     }
-    let other = await response.json();
-    setOtherNWIPTasks(other);
-    console.log(other);
-  }
-  getAllOtherNWIPTasks();
-  return
+    getAllOtherNWIPTasks();
+    return
   }, [otherNWIPTasks.length]);
-  
+
 
   return (
     <>
+      <p>Routine Tasks:</p>
       <div class="flex flex-col gap-4">
         {tasks.map((task) => (
-          task.type === "other" ? (
-            <div className="flex justify-around basis-2/3 h-10 w-96 rounded-sm border border-black-600 shadow-md">
-              <div className="text-left align-middle">
-                {task.name}
-              </div>
-
-              <div class="self-center">
-                <input type="checkbox" />
-              </div>
-
-              <div class="basis-6 self-end">
-                <img src="/remove.png" alt="Remove Sign"></img>
-              </div>
-            </div>
-          ) : (
+          task.type === "routine" ? (
             <div className="flex justify-around basis-2/3 h-10 w-150 rounded-sm border border-black-600 shadow-md">
               <div className="text-left align-middle">
-                {task.name}
+                {routineTasks.name}
               </div>
 
               {daysofWeek.map((day) => (
@@ -115,10 +102,11 @@ export default function Task() {
                 <img src="/remove.png" alt="Remove Sign"></img>
               </div>
             </div>
-          )
+          ) : (null)
 
         ))}
       </div>
     </>
   );
 }
+
