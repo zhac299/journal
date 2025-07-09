@@ -6,6 +6,10 @@ export default function Task() {
   const daysofWeek = ["M", "T", "W", "T", "F", "S", "S"];
   const endpoint = "http://localhost:5050/"
 
+  var [routineTasks, setRoutineTasks] = useState([]);
+  var [otherWIPTasks, setOtherWIPTasks] = useState([]);
+  var [otherNWIPTasks, setOtherNWIPTasks] = useState([]);
+
   useEffect(() => {
     // Fetch task data from the server
     async function getAllTasks() {
@@ -23,29 +27,40 @@ export default function Task() {
     return;
   }, [tasks.length]);
 
-  async function getAllRoutineTasks() {
-    const response = await fetch(endpoint + "routine");
-    if (!response.ok) {
-      const message = `An error occurred: ${response.statusText}`;
-      console.error(message);
-      return;
+  useEffect(() => {
+    async function getAllRoutineTasks() {
+      const response = await fetch(endpoint + "routine");
+      if (!response.ok) {
+        const message = `An error occurred: ${response.statusText}`;
+        console.error(message);
+        return;
+      }
+      let routine = await response.json();
+      setRoutineTasks(routine);
+      console.log(routine);
     }
-    let other = await response.json();
-    return other;
-  }
+    getAllRoutineTasks();
+    return;
+  }, [routineTasks.length]);
 
-  async function getAllOtherWIPTasks() {
-    const response = await fetch(endpoint + "other/wip");
-    if (!response.ok) {
-      const message = `An error occurred: ${response.statusText}`;
-      console.error(message);
-      return;
+  useEffect(() => {
+    async function getAllOtherWIPTasks() {
+      const response = await fetch(endpoint + "other/wip");
+      if (!response.ok) {
+        const message = `An error occurred: ${response.statusText}`;
+        console.error(message);
+        return;
+      }
+      let other = await response.json();
+      setOtherWIPTasks(other);
+      console.log(other);
     }
-    let other = await response.json();
-    return other;
-  }
+      getAllOtherWIPTasks();
+      return;
+    }, [otherWIPTasks.length]);
 
-  async function getAllOtherNWIPTasks() {
+  useEffect(() => {
+    async function getAllOtherNWIPTasks() {
     const response = await fetch(endpoint + "other/nwip");
     if (!response.ok) {
       const message = `An error occurred: ${response.statusText}`;
@@ -53,8 +68,13 @@ export default function Task() {
       return;
     }
     let other = await response.json();
-    return other;
+    setOtherNWIPTasks(other);
+    console.log(other);
   }
+  getAllOtherNWIPTasks();
+  return
+  }, [otherNWIPTasks.length]);
+  
 
   return (
     <>
