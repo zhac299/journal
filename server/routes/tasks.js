@@ -18,12 +18,21 @@ router.get("/", async (req, res) => {
     res.send(results).status(200);
 });
 
-// This section will help you get a list of all 'other' type of tasks-- GET
-router.get("/other", async (req, res) => {
+// This section will help you get a list of all 'other' type of tasks which are not in WIP-- GET
+router.get("/other/nwip", async (req, res) => {
     let collection = await db.collection("tasks");
     let results = await collection.find({}).toArray();
-    // Filter results to only include tasks of type 'other'
-    results = results.filter(task => task.type === "other");
+    // Filter results to only include tasks of type 'other' and inWIP == false
+    results = results.filter(task => task.type === "other" && task.inWIP === false);
+    res.send(results).status(200);
+});
+
+// This section will help you get a list of all wip tasks which are not routine -- GET
+router.get("/other/wip", async (req, res) => {
+    let collection = await db.collection("tasks");
+    let results = await collection.find({}).toArray();
+    // Filter results to only include tasks of type 'other' and inWIP == true
+    results = results.filter(task => task.type === "other" && task.inWIP === true);
     res.send(results).status(200);
 });
 
