@@ -2,30 +2,12 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 export default function Task() {
-  var [tasks, setTasks] = useState([]);
   const daysofWeek = ["M", "T", "W", "T", "F", "S", "S"];
   const endpoint = "http://localhost:5050/tasks/"
 
   var [routineTasks, setRoutineTasks] = useState([]);
   var [otherWIPTasks, setOtherWIPTasks] = useState([]);
   var [otherNWIPTasks, setOtherNWIPTasks] = useState([]);
-
-  useEffect(() => {
-    // Fetch task data from the server
-    async function getAllTasks() {
-      const response = await fetch(endpoint + "tasks");
-      if (!response.ok) {
-        const message = `An error occurred: ${response.statusText}`;
-        console.error(message);
-        return;
-      }
-      let tasks = await response.json();
-      setTasks(tasks);
-      console.log(tasks);
-    }
-    getAllTasks();
-    return;
-  }, [tasks.length]);
 
   useEffect(() => {
     async function getAllRoutineTasks() {
@@ -78,27 +60,30 @@ export default function Task() {
 
   return (
     <>
-      <p>Routine Tasks:</p>
+      <p class="text-left">Routine Tasks:</p>
       <div class="flex flex-col gap-4">
         {routineTasks.map((routineTask) => (
-          <div className="flex justify-around basis-2/3 h-10 w-150 rounded-sm border border-black-600 shadow-md">
-            <div className="text-left align-middle m-8">
+          <div class="flex justify-around basis-2/3 h-5 w-150 rounded-sm border border-gray-400 shadow-md">
+            <div class="text-left align-middle items-start min-w-30 max-w-30 place-self-center">
               {routineTask.name}
             </div>
-
-            {daysofWeek.map((day) => (
-              <div class="flex items-stretch  gap-2 justify-items-center">
-                <div>
-                  {day}
-                </div>
-                <div class="self-end">
-                  <input type="checkbox" />
-                </div>
+            <div>
+              <div class="columns-1 self-end">
+                <p>Done?</p>
+                <input type="checkbox" />
               </div>
-            ))}
-
-            <div class="basis-6 self-end">
-              <img src="/remove.png" alt="Remove Sign"></img>
+            </div>
+            <div class="columns-7">
+              {daysofWeek.map((day) => (
+                <div class="gap-2 justify-items-center">
+                  <div>
+                    {day}
+                  </div>
+                  <div class="self-end">
+                    <input type="checkbox" />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         ))}
