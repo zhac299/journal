@@ -15,11 +15,11 @@ app.use('/tasks', tasks);
 
 if (process.env.NODE_ENV === 'production') {
   // Serve static files from the React app
-  app.use(express.static(path.join(__dirname, 'client', 'build')));
+  app.use(express.static(path.join(process.cwd(),'client','dist','index.html')));
 
   // Handle any requests that don't match the above routes with the React app
   app.get('*splat', (req, res) => {
-    res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
+    res.sendFile(path.join(process.cwd(),'client','dist','index.html'));
   });
 }
 
