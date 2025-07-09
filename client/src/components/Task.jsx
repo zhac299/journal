@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 export default function Task() {
   var [tasks, setTasks] = useState([]);
   const daysofWeek = ["M", "T", "W", "T", "F", "S", "S"];
-  const endpoint = "http://localhost:5050/"
+  const endpoint = "http://localhost:5050/tasks/"
 
   var [routineTasks, setRoutineTasks] = useState([]);
   var [otherWIPTasks, setOtherWIPTasks] = useState([]);
@@ -80,30 +80,27 @@ export default function Task() {
     <>
       <p>Routine Tasks:</p>
       <div class="flex flex-col gap-4">
-        {tasks.map((task) => (
-          task.type === "routine" ? (
-            <div className="flex justify-around basis-2/3 h-10 w-150 rounded-sm border border-black-600 shadow-md">
-              <div className="text-left align-middle">
-                {routineTasks.name}
-              </div>
-
-              {daysofWeek.map((day) => (
-                <div class="flex items-stretch  gap-2 justify-items-center">
-                  <div>
-                    {day}
-                  </div>
-                  <div class="self-end">
-                    <input type="checkbox" />
-                  </div>
-                </div>
-              ))}
-
-              <div class="basis-6 self-end">
-                <img src="/remove.png" alt="Remove Sign"></img>
-              </div>
+        {routineTasks.map((routineTask) => (
+          <div className="flex justify-around basis-2/3 h-10 w-150 rounded-sm border border-black-600 shadow-md">
+            <div className="text-left align-middle m-8">
+              {routineTask.name}
             </div>
-          ) : (null)
 
+            {daysofWeek.map((day) => (
+              <div class="flex items-stretch  gap-2 justify-items-center">
+                <div>
+                  {day}
+                </div>
+                <div class="self-end">
+                  <input type="checkbox" />
+                </div>
+              </div>
+            ))}
+
+            <div class="basis-6 self-end">
+              <img src="/remove.png" alt="Remove Sign"></img>
+            </div>
+          </div>
         ))}
       </div>
     </>
