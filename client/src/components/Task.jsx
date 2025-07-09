@@ -8,7 +8,7 @@ export default function Task() {
   useEffect(() => {
     // Fetch task data from the server
     async function getTasks() {
-      const response = await fetch("http://localhost:5050/tasks");
+      const response = await fetch("https://journal-3uz1.onrender.com/tasks");
       if (!response.ok) {
         const message = `An error occurred: ${response.statusText}`;
         console.error(message);
