@@ -6,7 +6,7 @@
   "scripts": {
     "test": "npm test",
     "build": "npm install && npm install --prefix client && npm run build --prefix client",
-    "start": "node server/server.js"
+    "start": "NODE_ENV=production node server/server.js"
   },
   "repository": {
     "type": "git",
