@@ -6,7 +6,6 @@ import {
 } from 'react-router-dom'
 
 import Task from './components/Task'
-import TaskList from './components/TaskList'
 
 import './index.css'
 import App from './App.jsx'
