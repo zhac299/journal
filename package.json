@@ -4,7 +4,9 @@
   "description": "a module for the self-dev app - other features include gym/fitness tracker and budget functions. this module is the journal module.",
   "main": "index.js",
   "scripts": {
-    "test": "npm test"
+    "test": "npm test",
+    "build": "npm install && npm install --prefix client && npm run build --prefix client",
+    "start": "node server/server.js"
   },
   "repository": {
     "type": "git",
