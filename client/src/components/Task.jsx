@@ -4,11 +4,12 @@ import { useParams, useNavigate } from "react-router-dom";
 export default function Task() {
   const [tasks, setTasks] = useState([]);
   const daysofWeek = ["M", "T", "W", "T", "F", "S", "S"];
+  const endpoint = "http://localhost:5050/"
 
   useEffect(() => {
     // Fetch task data from the server
-    async function getTasks() {
-      const response = await fetch("http://localhost:5050/tasks");
+    async function getAllTasks() {
+      const response = await fetch(endpoint + "tasks");
       if (!response.ok) {
         const message = `An error occurred: ${response.statusText}`;
         console.error(message);
@@ -18,9 +19,42 @@ export default function Task() {
       setTasks(tasks);
       console.log(tasks);
     }
-    getTasks();
+    getAllTasks();
     return;
   }, [tasks.length]);
+
+  async function getAllRoutineTasks() {
+    const response = await fetch(endpoint + "routine");
+    if (!response.ok) {
+      const message = `An error occurred: ${response.statusText}`;
+      console.error(message);
+      return;
+    }
+    let other = await response.json();
+    return other;
+  }
+
+  async function getAllOtherWIPTasks() {
+    const response = await fetch(endpoint + "other/wip");
+    if (!response.ok) {
+      const message = `An error occurred: ${response.statusText}`;
+      console.error(message);
+      return;
+    }
+    let other = await response.json();
+    return other;
+  }
+
+  async function getAllOtherNWIPTasks() {
+    const response = await fetch(endpoint + "other/nwip");
+    if (!response.ok) {
+      const message = `An error occurred: ${response.statusText}`;
+      console.error(message);
+      return;
+    }
+    let other = await response.json();
+    return other;
+  }
 
   return (
     <>
