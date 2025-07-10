@@ -5,6 +5,7 @@ import './App.css'
 import RoutineTasks from './components/RoutineTasks.jsx'
 import CurrentDate from './components/CurrentDate'
 import WIPTasks from './components/WIP.jsx'
+import OtherTasks from './components/OtherTasks.jsx'
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
       <div className="flex flex-row gap-8">
         <div className="flex-1">
           <RoutineTasks />
+          <OtherTasks />
         </div>
         <div className="flex-">
           <WIPTasks />
