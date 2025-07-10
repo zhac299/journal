@@ -6,7 +6,7 @@ export default function RoutineTasks() {
   const endpoint = "http://localhost:5050/tasks/"
 
   var [routineTasks, setRoutineTasks] = useState([]);
-  var [otherNWIPTasks, setOtherNWIPTasks] = useState([]);
+  
 
   useEffect(() => {
     async function getAllRoutineTasks() {
@@ -23,23 +23,6 @@ export default function RoutineTasks() {
     getAllRoutineTasks();
     return;
   }, [routineTasks.length]);
-
-  useEffect(() => {
-    async function getAllOtherNWIPTasks() {
-      const response = await fetch(endpoint + "other/nwip");
-      if (!response.ok) {
-        const message = `An error occurred: ${response.statusText}`;
-        console.error(message);
-        return;
-      }
-      let other = await response.json();
-      setOtherNWIPTasks(other);
-      console.log(other);
-    }
-    getAllOtherNWIPTasks();
-    return
-  }, [otherNWIPTasks.length]);
-
 
   return (
     <>
