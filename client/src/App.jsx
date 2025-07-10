@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 
 import './App.css'
-import Task from './components/Task'
+import RoutineTasks from './components/RoutineTasks.jsx'
 import CurrentDate from './components/CurrentDate'
 
 function App() {
@@ -10,7 +10,7 @@ function App() {
     <>
       <div className="w-full p-6">
         <CurrentDate />
-        <Task />
+        <RoutineTasks />
         <Outlet />
       </div>
     </>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-export default function Task() {
+export default function RoutineTasks() {
   const daysofWeek = ["M", "T", "W", "T", "F", "S", "S"];
   const endpoint = "http://localhost:5050/tasks/"
 

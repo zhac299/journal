@@ -5,7 +5,7 @@ import {
   RouterProvider,
 } from 'react-router-dom'
 
-import Task from './components/Task'
+import RoutineTasks from './components/RoutineTasks.jsx'
 
 import './index.css'
 import App from './App.jsx'
