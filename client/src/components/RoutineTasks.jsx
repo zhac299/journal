@@ -45,7 +45,7 @@ export default function RoutineTasks() {
                   <div>
                     {day}
                   </div>
-                    <input type="checkbox" />
+                    <input class="accent-green-500/25" type="checkbox" />
                 </div>
               ))}
             </div>
