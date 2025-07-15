@@ -36,7 +36,7 @@ export default function RoutineTasks() {
             <div>
               <div class="columns-1">
                 <p>Done?</p>
-                <input type="checkbox" />
+                <input class="checked:accent-green-500/25" type="checkbox" />
               </div>
             </div>
             <div class="columns-7">
@@ -45,7 +45,7 @@ export default function RoutineTasks() {
                   <div>
                     {day}
                   </div>
-                    <input class="accent-green-500/25" type="checkbox" />
+                    <input class="checked:accent-green-500/25" type="checkbox" />
                 </div>
               ))}
             </div>

@@ -33,7 +33,7 @@ export default function WIP() {
             </div>
             <div>
               <div class="columns-1 self-end">
-                <input type="checkbox" />
+                <input class="checked:accent-green-500/25" type="checkbox" />
               </div>
             </div>
           </div>
