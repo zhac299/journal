@@ -30,7 +30,7 @@ export default function RoutineTasks() {
       <div class="flex flex-col gap-4">
         {routineTasks.map((routineTask) => (
           <div class="flex justify-around rounded-sm border border-gray-400 shadow-md">
-            <div class="text-left min-w-30 max-w-30 place-self-center">
+            <div class="text-left min-w-30 max-w-30 place-self-center text-nowrap">
               {routineTask.name}
             </div>
             <div>

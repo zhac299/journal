@@ -28,7 +28,7 @@ export default function WIP() {
       <div class="flex flex-col gap-4">
         {otherWIPTasks.map((otherWIPTask) => (
           <div class="flex justify-around basis-2/3 h-5 w-125 rounded-sm border border-gray-400 shadow-md">
-            <div class="text-left min-w-30 max-w-30 place-self-center">
+            <div class="text-left min-w-30 max-w-30 place-self-center text-nowrap">
               {otherWIPTask.name}
             </div>
             <div>
