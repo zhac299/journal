@@ -31,11 +31,6 @@ export default function WIP() {
             <div class="text-left min-w-30 max-w-30 place-self-center text-nowrap">
               {otherNWIPTask.name}
             </div>
-            <div>
-              <div class="columns-1 self-end">
-                <input type="checkbox" />
-              </div>
-            </div>
           </div>
         ))}
       </div>
