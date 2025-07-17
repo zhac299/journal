@@ -16,6 +16,7 @@ export default function CurrentDate() {
     return (
         <div>
             <p class="font-sans text-lg antialiased font-bold text-left underline underline-offset-4">Week Commencing {currentWeek}</p>
+            <br></br>
             <p class="font-sans text-base antialiased text-left">The date today is: {today.toDateString()}</p>
         </div>
     );
