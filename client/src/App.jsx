@@ -11,6 +11,7 @@ function App() {
   return (
     <>
       <CurrentDate />
+      <br></br>
       <div className="flex flex-row gap-8">
         <div className="flex-1">
           <RoutineTasks />
