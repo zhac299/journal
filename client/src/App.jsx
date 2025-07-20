@@ -2,17 +2,26 @@ import { useState } from 'react'
 import { Outlet } from 'react-router-dom'
 
 import './App.css'
-import Task from './components/Task'
+import RoutineTasks from './components/RoutineTasks.jsx'
 import CurrentDate from './components/CurrentDate'
+import WIPTasks from './components/WIP.jsx'
+import OtherTasks from './components/OtherTasks.jsx'
 
 function App() {
   return (
     <>
-      <div className="w-full p-6">
-        <CurrentDate />
-        <Task />
-        <Outlet />
+      <CurrentDate />
+      <br></br>
+      <div className="flex flex-row gap-8">
+        <div className="flex-1">
+          <RoutineTasks />
+          <OtherTasks />
+        </div>
+        <div className="flex-">
+          <WIPTasks />
+        </div>
       </div>
+      <Outlet />
     </>
   )
 }
