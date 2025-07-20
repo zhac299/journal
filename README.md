@@ -16,7 +16,7 @@ Used Dependencies:
 - postcss
 - autoprefixer
 - react-router-dom: adds client-side page routing to React
-- dnd-kit: for draggable components
+- dnd-kit (core/sortable/utilities): for draggable components
 
 To Run:
 BACKEND:
