@@ -26,26 +26,26 @@ export default function RoutineTasks() {
 
   return (
     <>
-      <p class="text-left">Routine Tasks:</p>
-      <div class="flex flex-col gap-4">
+      <p className="text-left">Routine Tasks:</p>
+      <div className="flex flex-col gap-4">
         {routineTasks.map((routineTask) => (
-          <div class="flex justify-around rounded-sm border border-gray-400 shadow-md">
-            <div class="text-left min-w-30 max-w-30 place-self-center text-nowrap">
+          <div className="flex justify-around rounded-sm border border-gray-400 shadow-md">
+            <div className="text-left min-w-30 max-w-30 place-self-center text-nowrap">
               {routineTask.name}
             </div>
             <div>
-              <div class="columns-1">
+              <div className="columns-1">
                 <p>Done?</p>
-                <input class="checked:accent-green-500/25" type="checkbox" />
+                <input className="checked:accent-green-500/25" type="checkbox" />
               </div>
             </div>
-            <div class="columns-7">
+            <div className="columns-7">
               {daysofWeek.map((day) => (
-                <div class="gap-2 justify-items-center">
+                <div className="gap-2 justify-items-center">
                   <div>
                     {day}
                   </div>
-                    <input class="checked:accent-green-500/25" type="checkbox" />
+                    <input className="checked:accent-green-500/25" type="checkbox" />
                 </div>
               ))}
             </div>
