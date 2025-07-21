@@ -13,7 +13,7 @@ export const Task = ({ _id, name, type }) => {
   return (
     <>
       {type === "routine" ? (
-        <div className="flex justify-around rounded-sm border border-gray-400 shadow-md">
+        <div ref={setNodeRef} {...attributes} {...listeners} style={style} className="flex justify-around rounded-sm border border-gray-400 shadow-md">
           <div className="text-left min-w-30 max-w-30 place-self-center text-nowrap">
             {name}
           </div>

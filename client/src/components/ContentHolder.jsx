@@ -68,11 +68,14 @@ export default function ContentHolder() {
         <>
             <p className="text-left">Routine Tasks:</p>
             <br></br>
-            <div className="flex flex-col gap-4">
-                {routineTasks.map((task) => (
-                    <Task _id={task._id.toString()} name={task.name} type={task.type} key={task._id} />
-                ))}
-            </div>
+            <SortableContext items={routineTaskIds} strategy={verticalListSortingStrategy}>
+
+                <div className="flex flex-col gap-4">
+                    {routineTasks.map((task) => (
+                        <Task _id={task._id.toString()} name={task.name} type={task.type} key={task._id} />
+                    ))}
+                </div>
+            </SortableContext>
             <br></br>
             <div className='grid grid-cols-2'>
                 <div>
