@@ -9,6 +9,7 @@ export default function ContentHolder() {
 
     var [otherNWIPTasks, setOtherNWIPTasks] = useState([]);
     var [otherWIPTasks, setOtherWIPTasks] = useState([]);
+    var [routineTasks, setRoutineTasks] = useState([]);
 
     useEffect(() => {
         async function getAllOtherNWIPTasks() {
@@ -42,12 +43,37 @@ export default function ContentHolder() {
         return;
     }, [otherWIPTasks.length]);
 
+    useEffect(() => {
+        async function getAllRoutineTasks() {
+            const response = await fetch(endpoint + "routine");
+            if (!response.ok) {
+                const message = `An error occurred: ${response.statusText}`;
+                console.error(message);
+                return;
+            }
+            let routine = await response.json();
+            setRoutineTasks(routine);
+            console.log(routine);
+        }
+        getAllRoutineTasks();
+        return;
+    }, [routineTasks.length]);
+
     // Pass array of IDs to SortableContext
     var nWIPtaskIds = otherNWIPTasks.map(task => task._id);
     var WIPtaskIds = otherWIPTasks.map(task => task._id);
+    var routineTaskIds = routineTasks.map(task => task._id);
 
     return (
         <>
+            <p className="text-left">Routine Tasks:</p>
+            <br></br>
+            <div className="flex flex-col gap-4">
+                {routineTasks.map((task) => (
+                    <Task _id={task._id.toString()} name={task.name} type={task.type} key={task._id} />
+                ))}
+            </div>
+            <br></br>
             <div className='grid grid-cols-2'>
                 <div>
                     <p className="text-justify indent-55">Other:</p>

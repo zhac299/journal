@@ -5,11 +5,8 @@ import {
   RouterProvider,
 } from 'react-router-dom'
 
-import RoutineTasks from './components/RoutineTasks.jsx'
-
 import './index.css'
 import App from './App.jsx'
-import CurrentDate from './components/CurrentDate.jsx'
 
 const router = createBrowserRouter([
   {
