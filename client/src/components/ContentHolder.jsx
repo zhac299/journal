@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
-import { OtherTasks } from './OtherTasks'
-import { WIP } from "./WIP";
+import { Task } from "./Task";
 
 export default function ContentHolder() {
     const endpoint = "http://localhost:5050/tasks/"
@@ -56,7 +55,7 @@ export default function ContentHolder() {
                     <SortableContext items={nWIPtaskIds} strategy={verticalListSortingStrategy}>
                         <div className="flex flex-col col-start-1 col-end-1 gap-4">
                             {otherNWIPTasks.map((task) => (
-                                <OtherTasks _id={task._id.toString()} name={task.name} key={task._id} />
+                                <Task _id={task._id.toString()} name={task.name} type={task.type} key={task._id} />
                             ))}
                         </div>
                     </SortableContext>
@@ -68,7 +67,7 @@ export default function ContentHolder() {
                     <SortableContext items={WIPtaskIds} strategy={verticalListSortingStrategy}>
                         <div className="flex flex-col col-start-2 col-end-2 gap-4">
                             {otherWIPTasks.map((task) => (
-                                <WIP _id={task._id.toString()} name={task.name} key={task._id} />
+                                <Task _id={task._id.toString()} name={task.name} type={task.type} key={task._id} />
                             ))}
                         </div>
                     </SortableContext>
