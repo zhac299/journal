@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 
+import { closestCorners, DndContext } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
 import { Task } from "./Task";
@@ -66,42 +67,44 @@ export default function ContentHolder() {
 
     return (
         <>
-            <p className="text-left">Routine Tasks:</p>
-            <br></br>
-            <SortableContext items={routineTaskIds} strategy={verticalListSortingStrategy}>
+            <DndContext collisionDetection={closestCorners}>
+                <p className="text-left">Routine Tasks:</p>
+                <br></br>
+                <SortableContext items={routineTaskIds} strategy={verticalListSortingStrategy}>
 
-                <div className="flex flex-col gap-4">
-                    {routineTasks.map((task) => (
-                        <Task _id={task._id.toString()} name={task.name} type={task.type} key={task._id} />
-                    ))}
-                </div>
-            </SortableContext>
-            <br></br>
-            <div className='grid grid-cols-2'>
-                <div>
-                    <p className="text-justify indent-55">Other:</p>
-                    <br></br>
-                    <SortableContext items={nWIPtaskIds} strategy={verticalListSortingStrategy}>
-                        <div className="flex flex-col col-start-1 col-end-1 gap-4">
-                            {otherNWIPTasks.map((task) => (
-                                <Task _id={task._id.toString()} name={task.name} type={task.type} key={task._id} />
-                            ))}
-                        </div>
-                    </SortableContext>
-                </div>
+                    <div className="flex flex-col gap-4">
+                        {routineTasks.map((task) => (
+                            <Task _id={task._id.toString()} name={task.name} type={task.type} key={task._id} />
+                        ))}
+                    </div>
+                </SortableContext>
+                <br></br>
+                <div className='grid grid-cols-2'>
+                    <div>
+                        <p className="text-justify indent-55">Other:</p>
+                        <br></br>
+                        <SortableContext items={nWIPtaskIds} strategy={verticalListSortingStrategy}>
+                            <div className="flex flex-col col-start-1 col-end-1 gap-4">
+                                {otherNWIPTasks.map((task) => (
+                                    <Task _id={task._id.toString()} name={task.name} type={task.type} key={task._id} />
+                                ))}
+                            </div>
+                        </SortableContext>
+                    </div>
 
-                <div>
-                    <p className="text-justify indent-55">WIP:</p>
-                    <br></br>
-                    <SortableContext items={WIPtaskIds} strategy={verticalListSortingStrategy}>
-                        <div className="flex flex-col col-start-2 col-end-2 gap-4">
-                            {otherWIPTasks.map((task) => (
-                                <Task _id={task._id.toString()} name={task.name} type={task.type} key={task._id} />
-                            ))}
-                        </div>
-                    </SortableContext>
+                    <div>
+                        <p className="text-justify indent-55">WIP:</p>
+                        <br></br>
+                        <SortableContext items={WIPtaskIds} strategy={verticalListSortingStrategy}>
+                            <div className="flex flex-col col-start-2 col-end-2 gap-4">
+                                {otherWIPTasks.map((task) => (
+                                    <Task _id={task._id.toString()} name={task.name} type={task.type} key={task._id} />
+                                ))}
+                            </div>
+                        </SortableContext>
+                    </div>
                 </div>
-            </div>
+            </DndContext>
         </>
     )
 }
