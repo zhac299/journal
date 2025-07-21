@@ -23,7 +23,7 @@ router.get("/other/nwip", async (req, res) => {
     let collection = await db.collection("tasks");
     let results = await collection.find({}).toArray();
     // Filter results to only include tasks of type 'other' and inWIP == false
-    results = results.filter(task => task.type === "other" && task.inWIP === false);
+    results = results.filter(task => task.type === "other");
     res.send(results).status(200);
 });
 
@@ -31,8 +31,8 @@ router.get("/other/nwip", async (req, res) => {
 router.get("/other/wip", async (req, res) => {
     let collection = await db.collection("tasks");
     let results = await collection.find({}).toArray();
-    // Filter results to only include tasks of type 'other' and inWIP == true
-    results = results.filter(task => task.type === "other" && task.inWIP === true);
+    // Filter results to only include tasks of type 'wip'
+    results = results.filter(task => task.type === "wip");
     res.send(results).status(200);
 });
 
