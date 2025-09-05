@@ -5,6 +5,8 @@ import './App.css'
 import CurrentDate from './components/CurrentDate'
 import ContentHolder from './components/ContentHolder.jsx'
 
+export const endpoint = "http://localhost:5050/tasks/"
+
 function App() {
   return (
     <>

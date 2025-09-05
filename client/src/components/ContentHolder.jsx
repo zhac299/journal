@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 
 import { closestCorners, DndContext } from '@dnd-kit/core'
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
 import { Task } from "./Task";
 
+import { endpoint } from "../App";
+
 export default function ContentHolder() {
-    const endpoint = "http://localhost:5050/tasks/"
+    
 
     var [otherNWIPTasks, setOtherNWIPTasks] = useState([]);
     var [otherWIPTasks, setOtherWIPTasks] = useState([]);
@@ -26,7 +28,7 @@ export default function ContentHolder() {
         }
         getAllOtherNWIPTasks();
         return
-    }, [otherNWIPTasks.length]);
+    }, []);
 
     useEffect(() => {
         async function getAllOtherWIPTasks() {
@@ -42,7 +44,7 @@ export default function ContentHolder() {
         }
         getAllOtherWIPTasks();
         return;
-    }, [otherWIPTasks.length]);
+    }, []);
 
     useEffect(() => {
         async function getAllRoutineTasks() {
@@ -58,18 +60,62 @@ export default function ContentHolder() {
         }
         getAllRoutineTasks();
         return;
-    }, [routineTasks.length]);
+    }, []);
 
     // Pass array of IDs to SortableContext
     var nWIPtaskIds = otherNWIPTasks.map(task => task._id);
     var WIPtaskIds = otherWIPTasks.map(task => task._id);
     var routineTaskIds = routineTasks.map(task => task._id);
 
+    const getRoutineTaskPos = id => routineTasks.findIndex(task => task._id === id);
+    const getOtherTaskPos = id => otherNWIPTasks.findIndex(task => task._id === id);
+    const getWIPTaskPos = id => otherWIPTasks.findIndex(task => task._id === id);
+
+    const handleDragEndRoutine = (event) => {
+        const { active, over } = event;
+
+        if (active.id === over.id) return;
+
+        setRoutineTasks((routineTasks) => {
+            const originalPos = getRoutineTaskPos(active.id);
+            const newPos = getRoutineTaskPos(over.id)
+
+            return arrayMove(routineTasks, originalPos, newPos)
+        })
+    }
+
+    const handleDragEndOther = (event) => {
+        const { active, over } = event;
+
+        if (active.id === over.id) return;
+
+        setOtherNWIPTasks((otherNWIPTasks) => {
+            const originalPos = getOtherTaskPos(active.id);
+            const newPos = getOtherTaskPos(over.id)
+
+            return arrayMove(otherNWIPTasks, originalPos, newPos)
+        })
+    }
+
+    const handleDragEndWIP = (event) => {
+        const { active, over } = event;
+
+        if (active.id === over.id) return;
+
+        setOtherWIPTasks((otherWIPTasks) => {
+            const originalPos = getWIPTaskPos(active.id);
+            const newPos = getWIPTaskPos(over.id)
+
+            return arrayMove(otherWIPTasks, originalPos, newPos)
+        })
+    }
+
     return (
         <>
-            <DndContext collisionDetection={closestCorners}>
-                <p className="text-left">Routine Tasks:</p>
-                <br></br>
+
+            <p className="text-left">Routine Tasks:</p>
+            <br></br>
+            <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEndRoutine}>
                 <SortableContext items={routineTaskIds} strategy={verticalListSortingStrategy}>
 
                     <div className="flex flex-col gap-4">
@@ -78,11 +124,14 @@ export default function ContentHolder() {
                         ))}
                     </div>
                 </SortableContext>
-                <br></br>
-                <div className='grid grid-cols-2'>
-                    <div>
-                        <p className="text-justify indent-55">Other:</p>
-                        <br></br>
+            </DndContext>
+
+            <br></br>
+            <div className='grid grid-cols-2'>
+                <div>
+                    <p className="text-justify indent-55">Other:</p>
+                    <br></br>
+                    <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEndOther}>
                         <SortableContext items={nWIPtaskIds} strategy={verticalListSortingStrategy}>
                             <div className="flex flex-col col-start-1 col-end-1 gap-4">
                                 {otherNWIPTasks.map((task) => (
@@ -90,11 +139,14 @@ export default function ContentHolder() {
                                 ))}
                             </div>
                         </SortableContext>
-                    </div>
+                    </DndContext>
+                </div>
 
-                    <div>
-                        <p className="text-justify indent-55">WIP:</p>
-                        <br></br>
+                <div>
+                    <p className="text-justify indent-55">WIP:</p>
+                    <br></br>
+                    <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEndWIP}>
+
                         <SortableContext items={WIPtaskIds} strategy={verticalListSortingStrategy}>
                             <div className="flex flex-col col-start-2 col-end-2 gap-4">
                                 {otherWIPTasks.map((task) => (
@@ -102,9 +154,10 @@ export default function ContentHolder() {
                                 ))}
                             </div>
                         </SortableContext>
-                    </div>
+                    </DndContext>
+
                 </div>
-            </DndContext>
+            </div>
         </>
     )
 }
