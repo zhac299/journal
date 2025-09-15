@@ -12,7 +12,7 @@ function App() {
     <>
       <CurrentDate />
       <br></br>
-        <ContentHolder />
+      <ContentHolder />
       <Outlet />
     </>
   )
