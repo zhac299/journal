@@ -79,8 +79,22 @@ export default function ContentHolder() {
         setRoutineTasks((routineTasks) => {
             const originalPos = getRoutineTaskPos(active.id);
             const newPos = getRoutineTaskPos(over.id)
+            const newOrder = arrayMove(routineTasks, originalPos, newPos)
 
-            return arrayMove(routineTasks, originalPos, newPos)
+            // Update position in backend
+            async function updateTaskPosition() {
+                const response = await fetch(`${endpoint}${active.id}/order/${newPos}`);
+                if (!response.ok) {
+                    const message = `An error occurred: ${response.statusText}`;
+                    console.error(message);
+                    return;
+                }
+                let result = await response.json();
+                console.log(result);
+            }
+        updateTaskPosition();
+
+        return newOrder;
         })
     }
 
@@ -99,15 +113,40 @@ export default function ContentHolder() {
 
     const handleDragEndWIP = (event) => {
         const { active, over } = event;
-
         if (active.id === over.id) return;
 
         setOtherWIPTasks((otherWIPTasks) => {
             const originalPos = getWIPTaskPos(active.id);
-            const newPos = getWIPTaskPos(over.id)
+            const newPos = getWIPTaskPos(over.id);
+            const newOrder = arrayMove(otherWIPTasks, originalPos, newPos);
 
-            return arrayMove(otherWIPTasks, originalPos, newPos)
-        })
+            // Update positions for all affected tasks
+            async function updatePositions() {
+                try {
+                    const response = await fetch(`${endpoint}updatePositions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            tasks: newOrder.map((task, index) => ({
+                                id: task._id,
+                                position: index
+                            }))
+                        })
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error('Failed to update positions:', error);
+                    // Optionally revert the UI if the update fails
+                    setOtherWIPTasks(otherWIPTasks);
+                }
+            }
+            updatePositions();
+            return newOrder;
+        });
     }
 
     return (
