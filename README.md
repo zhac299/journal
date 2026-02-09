@@ -18,6 +18,13 @@ Used Dependencies:
 - react-router-dom: adds client-side page routing to React
 - dnd-kit (core/sortable/utilities): for draggable components
 
+Dev Dependencies (testing):
+- jest: JavaScript testing framework
+- supertest: HTTP assertion library for testing Express routes
+- @babel/core + @babel/preset-env: transpilation for Jest (ESM support)
+- babel-jest: Babel integration for Jest
+- cross-env: cross-platform environment variable setting for test scripts
+
 To Run:
 BACKEND:
 cd server

@@ -1,53 +1,139 @@
-import { useSortable } from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { useState } from "react";
 
-export const Task = ({ _id, name, type }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: _id });
+import { endpoint } from "../App";
+
+export const Task = ({ _id, name, type, done, routine }) => {
+  const { attributes, listeners, setNodeRef, transform, transition } =
+    useSortable({ id: _id });
   const style = {
     transition,
-    transform: CSS.Transform.toString(transform)
-  }
+    transform: CSS.Transform.toString(transform),
+  };
 
-  const daysofWeek = ["M", "T", "W", "T", "F", "S", "S"];
+  const [isDone, setIsDone] = useState(done);
+  const [routineState, setRoutineState] = useState(routine || {});
+
+  const daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"];
+  const dayKeys = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+
+  const handleDoneToggle = async () => {
+    const newDone = !isDone;
+    setIsDone(newDone);
+    try {
+      const response = await fetch(`${endpoint}${_id}/done`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ done: newDone }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to update");
+      }
+    } catch (err) {
+      console.error("Error toggling done:", err);
+      setIsDone(!newDone); // revert on failure
+    }
+  };
+
+  const handleDayToggle = async (dayKey) => {
+    const newValue = !routineState[dayKey];
+    setRoutineState((prev) => ({ ...prev, [dayKey]: newValue }));
+    try {
+      const response = await fetch(`${endpoint}${_id}/routine`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ day: dayKey, value: newValue }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to update routine");
+      }
+    } catch (err) {
+      console.error("Error toggling routine day:", err);
+      setRoutineState((prev) => ({ ...prev, [dayKey]: !newValue })); // revert
+    }
+  };
 
   return (
     <>
       {type === "routine" ? (
-        <div ref={setNodeRef} {...attributes} {...listeners} style={style} className="flex justify-around rounded-sm border border-gray-400 shadow-md">
-          <div className="text-left min-w-30 max-w-30 place-self-center text-nowrap">
+        <div
+          ref={setNodeRef}
+          style={style}
+          className="flex justify-around rounded-sm border border-gray-400 shadow-md"
+        >
+          {/* Drag handle - only this area is draggable */}
+          <div
+            className="text-left min-w-30 max-w-30 place-self-center text-nowrap cursor-grab"
+            {...attributes}
+            {...listeners}
+          >
             {name}
           </div>
+          {/* Checkbox area - NOT draggable, clicks work normally */}
           <div className="columns-1">
             <p>Done?</p>
-            <input className="checked:accent-green-500/25" type="checkbox" />
+            <input
+              className="checked:accent-green-500/25"
+              type="checkbox"
+              checked={isDone}
+              onChange={handleDoneToggle}
+            />
           </div>
           <div className="columns-7">
-            {daysofWeek.map((day) => (
-              <div className="gap-2 justify-items-center">
-                <div>
-                  {day}
+            {daysOfWeek.map((day, index) => {
+              const key = dayKeys[index];
+              return (
+                <div className="gap-2 justify-items-center" key={index}>
+                  <div>{day}</div>
+                  <input
+                    className="checked:accent-green-500/25"
+                    type="checkbox"
+                    checked={!!routineState[key]}
+                    onChange={() => handleDayToggle(key)}
+                  />
                 </div>
-                <input className="checked:accent-green-500/25" type="checkbox" />
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ) : (
-        <div ref={setNodeRef} {...attributes} {...listeners} style={style} className="flex justify-around basis-2/3 h-5 w-125 rounded-sm border border-gray-400 shadow-md">
+        <div
+          ref={setNodeRef}
+          style={style}
+          className="flex justify-around basis-2/3 h-5 w-125 rounded-sm border border-gray-400 shadow-md"
+        >
           {type === "wip" ? (
             <>
-              <div className="text-left min-w-30 max-w-30 place-self-center text-nowrap">
+              {/* Drag handle */}
+              <div
+                className="text-left min-w-30 max-w-30 place-self-center text-nowrap cursor-grab"
+                {...attributes}
+                {...listeners}
+              >
                 {name}
               </div>
+              {/* Checkbox - NOT draggable */}
               <div className="columns-1 self-end">
-                <input className="checked:accent-green-500/25" type="checkbox" />
+                <input
+                  className="checked:accent-green-500/25"
+                  type="checkbox"
+                  checked={isDone}
+                  onChange={handleDoneToggle}
+                />
               </div>
             </>
           ) : (
-            name
+            <div
+              className="cursor-grab"
+              {...attributes}
+              {...listeners}
+            >
+              {name}
+            </div>
           )}
         </div>
       )}
     </>
   );
-}
+};

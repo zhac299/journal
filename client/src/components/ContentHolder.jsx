@@ -8,7 +8,6 @@ import { Task } from "./Task";
 import { endpoint } from "../App";
 
 export default function ContentHolder() {
-    
 
     var [otherNWIPTasks, setOtherNWIPTasks] = useState([]);
     var [otherWIPTasks, setOtherWIPTasks] = useState([]);
@@ -24,7 +23,6 @@ export default function ContentHolder() {
             }
             let other = await response.json();
             setOtherNWIPTasks(other);
-            console.log(other);
         }
         getAllOtherNWIPTasks();
         return
@@ -40,7 +38,6 @@ export default function ContentHolder() {
             }
             let other = await response.json();
             setOtherWIPTasks(other);
-            console.log(other);
         }
         getAllOtherWIPTasks();
         return;
@@ -56,7 +53,6 @@ export default function ContentHolder() {
             }
             let routine = await response.json();
             setRoutineTasks(routine);
-            console.log(routine);
         }
         getAllRoutineTasks();
         return;
@@ -81,46 +77,6 @@ export default function ContentHolder() {
             const newPos = getRoutineTaskPos(over.id)
             const newOrder = arrayMove(routineTasks, originalPos, newPos)
 
-            // Update position in backend
-            async function updateTaskPosition() {
-                const response = await fetch(`${endpoint}${active.id}/order/${newPos}`);
-                if (!response.ok) {
-                    const message = `An error occurred: ${response.statusText}`;
-                    console.error(message);
-                    return;
-                }
-                let result = await response.json();
-                console.log(result);
-            }
-        updateTaskPosition();
-
-        return newOrder;
-        })
-    }
-
-    const handleDragEndOther = (event) => {
-        const { active, over } = event;
-
-        if (active.id === over.id) return;
-
-        setOtherNWIPTasks((otherNWIPTasks) => {
-            const originalPos = getOtherTaskPos(active.id);
-            const newPos = getOtherTaskPos(over.id)
-
-            return arrayMove(otherNWIPTasks, originalPos, newPos)
-        })
-    }
-
-    const handleDragEndWIP = (event) => {
-        const { active, over } = event;
-        if (active.id === over.id) return;
-
-        setOtherWIPTasks((otherWIPTasks) => {
-            const originalPos = getWIPTaskPos(active.id);
-            const newPos = getWIPTaskPos(over.id);
-            const newOrder = arrayMove(otherWIPTasks, originalPos, newPos);
-
-            // Update positions for all affected tasks
             async function updatePositions() {
                 try {
                     const response = await fetch(`${endpoint}updatePositions`, {
@@ -140,7 +96,81 @@ export default function ContentHolder() {
                     }
                 } catch (error) {
                     console.error('Failed to update positions:', error);
-                    // Optionally revert the UI if the update fails
+                    setRoutineTasks(routineTasks); // Revert
+                }
+            }
+            updatePositions();
+
+            return newOrder;
+        })
+    }
+
+    const handleDragEndOther = (event) => {
+        const { active, over } = event;
+
+        if (active.id === over.id) return;
+
+        setOtherNWIPTasks((otherNWIPTasks) => {
+            const originalPos = getOtherTaskPos(active.id);
+            const newPos = getOtherTaskPos(over.id)
+            const newOrder = arrayMove(otherNWIPTasks, originalPos, newPos);
+
+            async function updatePositions() {
+                try {
+                    const response = await fetch(`${endpoint}updatePositions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            tasks: newOrder.map((task, index) => ({
+                                id: task._id,
+                                position: index
+                            }))
+                        })
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error('Failed to update positions:', error);
+                    setOtherNWIPTasks(otherNWIPTasks);
+                }
+            }
+            updatePositions();
+
+            return newOrder;
+        })
+    }
+
+    const handleDragEndWIP = (event) => {
+        const { active, over } = event;
+        if (active.id === over.id) return;
+
+        setOtherWIPTasks((otherWIPTasks) => {
+            const originalPos = getWIPTaskPos(active.id);
+            const newPos = getWIPTaskPos(over.id);
+            const newOrder = arrayMove(otherWIPTasks, originalPos, newPos);
+
+            async function updatePositions() {
+                try {
+                    const response = await fetch(`${endpoint}updatePositions`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            tasks: newOrder.map((task, index) => ({
+                                id: task._id,
+                                position: index
+                            }))
+                        })
+                    });
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                } catch (error) {
+                    console.error('Failed to update positions:', error);
                     setOtherWIPTasks(otherWIPTasks);
                 }
             }
@@ -159,7 +189,7 @@ export default function ContentHolder() {
 
                     <div className="flex flex-col gap-4">
                         {routineTasks.map((task) => (
-                            <Task _id={task._id.toString()} name={task.name} type={task.type} key={task._id} />
+                            <Task _id={task._id} name={task.name} type={task.type} done={task.done} routine={task.routine} key={task._id} />
                         ))}
                     </div>
                 </SortableContext>
@@ -174,7 +204,7 @@ export default function ContentHolder() {
                         <SortableContext items={nWIPtaskIds} strategy={verticalListSortingStrategy}>
                             <div className="flex flex-col col-start-1 col-end-1 gap-4">
                                 {otherNWIPTasks.map((task) => (
-                                    <Task _id={task._id.toString()} name={task.name} type={task.type} key={task._id} />
+                                    <Task _id={task._id} name={task.name} type={task.type} done={task.done} routine={task.routine} key={task._id} />
                                 ))}
                             </div>
                         </SortableContext>
@@ -189,7 +219,7 @@ export default function ContentHolder() {
                         <SortableContext items={WIPtaskIds} strategy={verticalListSortingStrategy}>
                             <div className="flex flex-col col-start-2 col-end-2 gap-4">
                                 {otherWIPTasks.map((task) => (
-                                    <Task _id={task._id.toString()} name={task.name} type={task.type} key={task._id} />
+                                    <Task _id={task._id} name={task.name} type={task.type} done={task.done} routine={task.routine} key={task._id} />
                                 ))}
                             </div>
                         </SortableContext>
