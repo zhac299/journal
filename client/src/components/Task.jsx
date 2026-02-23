@@ -60,13 +60,12 @@ export const Task = ({ _id, name, type, done, routine }) => {
         <div
           ref={setNodeRef}
           style={style}
-          className="flex justify-around rounded-sm border border-gray-400 shadow-md"
+          className="flex justify-around rounded-sm border border-gray-400 shadow-md cursor-grab"
+          {...attributes}
+          {...listeners}
         >
-          {/* Drag handle - only this area is draggable */}
           <div
-            className="text-left min-w-30 max-w-30 place-self-center text-nowrap cursor-grab"
-            {...attributes}
-            {...listeners}
+            className="text-left min-w-30 max-w-30 place-self-center text-nowrap"
           >
             {name}
           </div>
@@ -101,19 +100,17 @@ export const Task = ({ _id, name, type, done, routine }) => {
         <div
           ref={setNodeRef}
           style={style}
-          className="flex justify-around basis-2/3 h-5 w-125 rounded-sm border border-gray-400 shadow-md"
+          className="flex justify-around basis-2/3 h-5 w-125 rounded-sm border border-gray-400 shadow-md cursor-grab"
+          {...attributes}
+          {...listeners}
         >
           {type === "wip" ? (
             <>
-              {/* Drag handle */}
               <div
-                className="text-left min-w-30 max-w-30 place-self-center text-nowrap cursor-grab"
-                {...attributes}
-                {...listeners}
+                className="text-left min-w-30 max-w-30 place-self-center text-nowrap"
               >
                 {name}
               </div>
-              {/* Checkbox - NOT draggable */}
               <div className="columns-1 self-end">
                 <input
                   className="checked:accent-green-500/25"
@@ -124,11 +121,7 @@ export const Task = ({ _id, name, type, done, routine }) => {
               </div>
             </>
           ) : (
-            <div
-              className="cursor-grab"
-              {...attributes}
-              {...listeners}
-            >
+            <div>
               {name}
             </div>
           )}

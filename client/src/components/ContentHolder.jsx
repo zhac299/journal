@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-import { closestCorners, DndContext } from '@dnd-kit/core'
+import { closestCorners, DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
 import { Task } from "./Task";
@@ -12,6 +12,14 @@ export default function ContentHolder() {
     var [otherNWIPTasks, setOtherNWIPTasks] = useState([]);
     var [otherWIPTasks, setOtherWIPTasks] = useState([]);
     var [routineTasks, setRoutineTasks] = useState([]);
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, {
+            activationConstraint: {
+                distance: 8,
+            },
+        })
+    );
 
     useEffect(() => {
         async function getAllOtherNWIPTasks() {
@@ -184,7 +192,7 @@ export default function ContentHolder() {
 
             <p className="text-left">Routine Tasks:</p>
             <br></br>
-            <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEndRoutine}>
+            <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEndRoutine}>
                 <SortableContext items={routineTaskIds} strategy={verticalListSortingStrategy}>
 
                     <div className="flex flex-col gap-4">
@@ -200,7 +208,7 @@ export default function ContentHolder() {
                 <div>
                     <p className="text-justify indent-55">Other:</p>
                     <br></br>
-                    <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEndOther}>
+                    <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEndOther}>
                         <SortableContext items={nWIPtaskIds} strategy={verticalListSortingStrategy}>
                             <div className="flex flex-col col-start-1 col-end-1 gap-4">
                                 {otherNWIPTasks.map((task) => (
@@ -214,7 +222,7 @@ export default function ContentHolder() {
                 <div>
                     <p className="text-justify indent-55">WIP:</p>
                     <br></br>
-                    <DndContext collisionDetection={closestCorners} onDragEnd={handleDragEndWIP}>
+                    <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEndWIP}>
 
                         <SortableContext items={WIPtaskIds} strategy={verticalListSortingStrategy}>
                             <div className="flex flex-col col-start-2 col-end-2 gap-4">
