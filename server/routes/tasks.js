@@ -72,17 +72,107 @@ router.patch("/:id/routine", async (req, res) => {
   }
 });
 
-// POST - update specific task position
-router.post("/:id/order/:pos", async (req, res) => {
+// POST - create a new task
+router.post("/", async (req, res) => {
   try {
-    let collection = await db.collection("tasks");
-    const query = { _id: new ObjectId(req.params.id) };
-    const updates = { $set: { position: parseInt(req.params.pos) } };
-    let result = await collection.updateOne(query, updates);
-    res.send(result).status(200);
+    const collection = await db.collection("tasks");
+    const { name, type } = req.body;
+    if (!name || !type) {
+      return res.status(400).send("Name and type are required");
+    }
+
+    const siblingTasks = await collection.find({ type }).sort({ position: 1 }).toArray();
+    const maxPosition = siblingTasks.reduce((max, task) => Math.max(max, task.position || 0), -1);
+    const position = maxPosition + 1;
+
+    const newTask = {
+      name,
+      type,
+      done: false,
+      position,
+    };
+
+    if (type === "routine") {
+      newTask.routine = {
+        monday: false,
+        tuesday: false,
+        wednesday: false,
+        thursday: false,
+        friday: false,
+        saturday: false,
+        sunday: false
+      };
+    }
+
+    const result = await collection.insertOne(newTask);
+    res.status(201).send({ _id: result.insertedId, ...newTask });
   } catch (err) {
-    console.error(err);
-    res.status(500).send("Error updating task position");
+    console.error("Error creating task:", err);
+    res.status(500).send("Error creating task");
+  }
+});
+
+// PATCH - update a task (name and/or type)
+router.patch("/:id", async (req, res) => {
+  try {
+    const collection = await db.collection("tasks");
+    const query = { _id: new ObjectId(req.params.id) };
+    const { name, type } = req.body;
+
+    const currentTask = await collection.findOne(query);
+    if (!currentTask) {
+      return res.status(404).send("Task not found");
+    }
+
+    const updateData = {};
+    if (name !== undefined) updateData.name = name;
+
+    const updateObj = { $set: updateData };
+
+    if (type !== undefined && type !== currentTask.type) {
+      updateData.type = type;
+      
+      const siblingTasks = await collection.find({ type }).sort({ position: 1 }).toArray();
+      const maxPosition = siblingTasks.reduce((max, task) => Math.max(max, task.position || 0), -1);
+      updateData.position = maxPosition + 1;
+
+      if (type === "routine") {
+        updateData.routine = {
+          monday: false,
+          tuesday: false,
+          wednesday: false,
+          thursday: false,
+          friday: false,
+          saturday: false,
+          sunday: false
+        };
+      } else {
+        updateObj.$unset = { routine: "" };
+      }
+    }
+
+    await collection.updateOne(query, updateObj);
+    const updatedTask = await collection.findOne(query);
+    res.status(200).send(updatedTask);
+  } catch (err) {
+    console.error("Error updating task:", err);
+    res.status(500).send("Error updating task");
+  }
+});
+
+// DELETE - delete a task
+router.delete("/:id", async (req, res) => {
+  try {
+    const collection = await db.collection("tasks");
+    const query = { _id: new ObjectId(req.params.id) };
+    const result = await collection.deleteOne(query);
+    if (result.deletedCount === 0) {
+      return res.status(404).send("Task not found");
+    }
+    res.status(200).send({ message: "Task deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting task:", err);
+    res.status(500).send("Error deleting task");
   }
 });
 

@@ -20,7 +20,9 @@ jest.mock('../db/connection.js', () => {
                 })),
                 findOne: jest.fn().mockResolvedValue(mockTasks[0]),
                 updateOne: jest.fn().mockResolvedValue({ matchedCount: 1, modifiedCount: 1 }),
-                bulkWrite: jest.fn().mockResolvedValue({ insertedCount: 0, modifiedCount: 1 })
+                bulkWrite: jest.fn().mockResolvedValue({ insertedCount: 0, modifiedCount: 1 }),
+                insertOne: jest.fn().mockResolvedValue({ insertedId: '3' }),
+                deleteOne: jest.fn().mockResolvedValue({ deletedCount: 1 })
             })),
         }
     };
@@ -86,5 +88,32 @@ describe('Tasks API', () => {
 
         expect(res.statusCode).toEqual(200);
         expect(res.body.message).toBe("Positions updated");
+    });
+
+    it('POST /tasks should create a new task', async () => {
+        const res = await request(app)
+            .post('/tasks')
+            .send({ name: 'New Task', type: 'wip' });
+
+        expect(res.statusCode).toEqual(201);
+        expect(res.body._id).toBe('3');
+        expect(res.body.name).toBe('New Task');
+    });
+
+    it('PATCH /tasks/:id should update task details', async () => {
+        const res = await request(app)
+            .patch('/tasks/1')
+            .send({ name: 'Updated Name', type: 'routine' });
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.name).toBe('T1'); // returns mocked findOne task
+    });
+
+    it('DELETE /tasks/:id should delete task', async () => {
+        const res = await request(app)
+            .delete('/tasks/1');
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.message).toBe("Task deleted successfully");
     });
 });
