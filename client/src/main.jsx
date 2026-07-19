@@ -5,6 +5,7 @@ import {
   RouterProvider,
 } from 'react-router-dom'
 
+import { Toaster } from 'react-hot-toast'
 import './index.css'
 import App from './App.jsx'
 
@@ -17,6 +18,7 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
+    <Toaster position="top-right" reverseOrder={false} />
     <RouterProvider router={router} />
   </StrictMode>,
 )

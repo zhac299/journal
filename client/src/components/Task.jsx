@@ -82,7 +82,7 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
             e.stopPropagation();
             onOpenActions && onOpenActions({ _id, name, type });
           }}
-          className="text-gray-500 hover:text-gray-800 p-1.5 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+          className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
           title="Task Options"
         >
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -96,7 +96,7 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
               e.stopPropagation();
               onEdit && onEdit({ _id, name, type });
             }}
-            className="text-blue-500 hover:text-blue-700 p-1 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+            className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             title="Edit Task"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -108,7 +108,7 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
               e.stopPropagation();
               onDelete && onDelete({ _id, name, type });
             }}
-            className="text-red-500 hover:text-red-700 p-1 rounded-full hover:bg-gray-100 transition-colors cursor-pointer"
+            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             title="Delete Task"
           >
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -123,22 +123,41 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
   const daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"];
   const dayKeys = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
+  // Styles for completed WIP or Routine tasks
+  const isCompleted = isDone;
+
+  const containerClasses = type === "routine"
+    ? `group flex justify-between items-center rounded-md border shadow-xs cursor-grab p-3 transition-all select-none gap-4
+       ${isCompleted 
+         ? "bg-slate-100/60 dark:bg-slate-800/40 opacity-60 border-slate-200 dark:border-slate-800" 
+         : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500"
+       }`
+    : `group flex justify-between items-center w-full max-w-125 min-h-12 rounded-md border shadow-xs cursor-grab py-2.5 px-4 transition-all select-none
+       ${type === "wip" && isCompleted 
+         ? "bg-slate-100/60 dark:bg-slate-800/40 opacity-60 border-slate-200 dark:border-slate-800" 
+         : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500"
+       }`;
+
+  const nameClasses = (type === "wip" || type === "routine") && isCompleted
+    ? "text-left font-semibold text-slate-400 dark:text-slate-500 line-through truncate flex-1 pr-2 font-normal"
+    : "text-left font-semibold text-slate-800 dark:text-slate-200 truncate flex-1 pr-2";
+
   return (
     <>
       {type === "routine" ? (
         <div
           ref={setNodeRef}
           style={style}
-          className="group flex justify-between items-center rounded-md border border-gray-300 shadow-sm cursor-grab bg-white p-3 hover:border-gray-400 transition-all select-none gap-4"
+          className={containerClasses}
           {...attributes}
           {...listeners}
         >
-          <div className="text-left font-semibold text-gray-800 truncate flex-1">
+          <div className={nameClasses}>
             {name}
           </div>
           {/* Checkbox area - NOT draggable, clicks work normally */}
-          <div className="flex items-center space-x-2 border-l border-gray-200 pl-4" onPointerDown={(e) => e.stopPropagation()}>
-            <span className="text-xs text-gray-500 font-medium">Done?</span>
+          <div className="flex items-center space-x-2 border-l border-slate-200 dark:border-slate-700 pl-4" onPointerDown={(e) => e.stopPropagation()}>
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Done?</span>
             <input
               className="checked:accent-green-500 h-5 w-5 rounded cursor-pointer"
               type="checkbox"
@@ -146,12 +165,12 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
               onChange={handleDoneToggle}
             />
           </div>
-          <div className="flex items-center space-x-3 border-l border-gray-200 pl-4" onPointerDown={(e) => e.stopPropagation()}>
+          <div className="flex items-center space-x-3 border-l border-slate-200 dark:border-slate-700 pl-4" onPointerDown={(e) => e.stopPropagation()}>
             {daysOfWeek.map((day, index) => {
               const key = dayKeys[index];
               return (
                 <div className="flex flex-col items-center" key={index}>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase mb-0.5">{day}</span>
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-0.5">{day}</span>
                   <input
                     className="checked:accent-green-500 h-4 w-4 rounded cursor-pointer"
                     type="checkbox"
@@ -168,15 +187,15 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
         <div
           ref={setNodeRef}
           style={style}
-          className="group flex justify-between items-center w-full max-w-125 min-h-12 rounded-md border border-gray-300 shadow-sm cursor-grab bg-white py-2.5 px-4 hover:border-gray-400 transition-all select-none"
+          className={containerClasses}
           {...attributes}
           {...listeners}
         >
-          <div className="text-left font-semibold text-gray-800 truncate flex-1 pr-2">
+          <div className={nameClasses}>
             {name}
           </div>
           {type === "wip" && (
-            <div className="flex items-center space-x-2 border-l border-gray-200 pl-4 mr-2" onPointerDown={(e) => e.stopPropagation()}>
+            <div className="flex items-center space-x-2 border-l border-slate-200 dark:border-slate-700 pl-4 mr-2" onPointerDown={(e) => e.stopPropagation()}>
               <input
                 className="checked:accent-green-500 h-5 w-5 rounded cursor-pointer"
                 type="checkbox"

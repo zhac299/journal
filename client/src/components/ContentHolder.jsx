@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { closestCorners, DndContext, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { closestCorners, DndContext, PointerSensor, useSensor, useSensors, useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import toast from 'react-hot-toast';
 
 import { Task } from "./Task";
 import { useTaskList } from "../hooks/useTaskList";
@@ -9,6 +10,16 @@ import { endpoint } from "../App";
 import Modal from "./Modal";
 import TaskForm from "./TaskForm";
 import DeleteConfirm from "./DeleteConfirm";
+
+// Custom droppable column helper to register empty lists as drop zones
+function DroppableColumn({ id, children, className }) {
+    const { setNodeRef } = useDroppable({ id });
+    return (
+        <div ref={setNodeRef} className={className}>
+            {children}
+        </div>
+    );
+}
 
 export default function ContentHolder() {
     const routineHook = useTaskList("routine");
@@ -44,9 +55,11 @@ export default function ContentHolder() {
             else if (type === "wip") wipHook.fetchTasks();
             else otherHook.fetchTasks();
 
+            toast.success("Task created successfully");
             closeModal();
         } catch (err) {
             console.error("Error creating task:", err);
+            toast.error("Failed to create task");
         }
     };
 
@@ -77,9 +90,11 @@ export default function ContentHolder() {
                 else otherHook.updateTaskState(updatedTask);
             }
 
+            toast.success("Task updated");
             closeModal();
         } catch (err) {
             console.error("Error editing task:", err);
+            toast.error("Failed to update task");
         }
     };
 
@@ -95,9 +110,112 @@ export default function ContentHolder() {
             else if (task.type === "wip") wipHook.removeTaskState(task._id);
             else otherHook.removeTaskState(task._id);
 
+            toast.success("Task deleted");
             closeModal();
         } catch (err) {
             console.error("Error deleting task:", err);
+            toast.error("Failed to delete task");
+        }
+    };
+
+    // Unified Drag End handler for sorting and cross-container drops
+    const handleDragEnd = async (event) => {
+        const { active, over } = event;
+        if (!over) return;
+
+        const activeId = active.id;
+        const overId = over.id;
+
+        // 1. Identify source container
+        let sourceContainer = null;
+        let activeTask = null;
+
+        if (routineHook.taskIds.includes(activeId)) {
+            sourceContainer = "routine";
+            activeTask = routineHook.tasks.find(t => t._id === activeId);
+        } else if (wipHook.taskIds.includes(activeId)) {
+            sourceContainer = "wip";
+            activeTask = wipHook.tasks.find(t => t._id === activeId);
+        } else if (otherHook.taskIds.includes(activeId)) {
+            sourceContainer = "other";
+            activeTask = otherHook.tasks.find(t => t._id === activeId);
+        }
+
+        if (!sourceContainer || !activeTask) return;
+
+        // 2. Identify target container
+        let targetContainer = null;
+
+        if (overId === "routine" || routineHook.taskIds.includes(overId)) {
+            targetContainer = "routine";
+        } else if (overId === "wip" || wipHook.taskIds.includes(overId)) {
+            targetContainer = "wip";
+        } else if (overId === "other" || otherHook.taskIds.includes(overId)) {
+            targetContainer = "other";
+        }
+
+        if (!targetContainer) return;
+
+        // Case A: Dragged within the same container
+        if (sourceContainer === targetContainer) {
+            if (sourceContainer === "routine") {
+                routineHook.handleDragEnd(event);
+            } else if (sourceContainer === "wip") {
+                wipHook.handleDragEnd(event);
+            } else if (sourceContainer === "other") {
+                otherHook.handleDragEnd(event);
+            }
+            return;
+        }
+
+        // Case B: Dragged across containers (Other <--> WIP <--> Routine)
+        try {
+            // Optimistic update of local states to prevent layout flicker
+            if (sourceContainer === "routine") routineHook.removeTaskState(activeId);
+            else if (sourceContainer === "wip") wipHook.removeTaskState(activeId);
+            else otherHook.removeTaskState(activeId);
+
+            const updatedTask = { ...activeTask, type: targetContainer };
+            if (targetContainer === "routine") {
+                updatedTask.routine = updatedTask.routine || {
+                    monday: false, tuesday: false, wednesday: false, thursday: false, friday: false, saturday: false, sunday: false
+                };
+                routineHook.addTaskState(updatedTask);
+            } else if (targetContainer === "wip") {
+                delete updatedTask.routine;
+                wipHook.addTaskState(updatedTask);
+            } else {
+                delete updatedTask.routine;
+                otherHook.addTaskState(updatedTask);
+            }
+
+            // Sync with backend API
+            const response = await fetch(`${endpoint}${activeId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ type: targetContainer }),
+            });
+            if (!response.ok) throw new Error("Failed to update type on server");
+
+            const containerNames = {
+                routine: "Routine Tasks",
+                wip: "WIP (Work In Progress)",
+                other: "Other (Backlog)"
+            };
+            toast.success(`Moved "${activeTask.name}" to ${containerNames[targetContainer]}`);
+
+            // Fetch to ensure correct sorting index order
+            if (targetContainer === "routine") routineHook.fetchTasks();
+            else if (targetContainer === "wip") wipHook.fetchTasks();
+            else otherHook.fetchTasks();
+
+        } catch (err) {
+            console.error("Error moving task across containers:", err);
+            toast.error("Failed to move task");
+            // Revert state
+            routineHook.fetchTasks();
+            wipHook.fetchTasks();
+            otherHook.fetchTasks();
         }
     };
 
@@ -147,24 +265,28 @@ export default function ContentHolder() {
     };
 
     return (
-        <div className="max-w-4xl mx-auto px-4 py-6">
-            {/* Routine Tasks Section */}
-            <div className="bg-gray-50 rounded-lg p-5 border border-gray-200 shadow-xs mb-8">
-                <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
-                    <p className="font-bold text-gray-800 text-lg uppercase tracking-wide">Routine Tasks</p>
-                    <button
-                        onClick={() => openCreateModal("routine")}
-                        className="flex items-center space-x-1 px-3 py-1 bg-blue-600 text-white text-sm font-semibold rounded-md shadow-xs hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                    >
-                        <span>Add Task</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
-                    </button>
-                </div>
-                <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={routineHook.handleDragEnd}>
+        <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+            <div className="max-w-4xl mx-auto py-6">
+                
+                {/* Routine Tasks Card Board */}
+                <div className="bg-slate-50 dark:bg-slate-900/60 rounded-lg p-5 border border-slate-200 dark:border-slate-800 shadow-sm mb-8 border-t-4 border-t-purple-500">
+                    <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+                        <p className="font-bold text-slate-800 dark:text-slate-100 text-lg uppercase tracking-wide flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+                            Routine Tasks
+                        </p>
+                        <button
+                            onClick={() => openCreateModal("routine")}
+                            className="flex items-center space-x-1 px-3 py-1 bg-blue-600 text-white text-sm font-semibold rounded-md shadow-xs hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                        >
+                            <span>Add Task</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                        </button>
+                    </div>
                     <SortableContext items={routineHook.taskIds} strategy={verticalListSortingStrategy}>
-                        <div className="flex flex-col gap-3 min-h-[50px]">
+                        <DroppableColumn id="routine" className="flex flex-col gap-3 min-h-[70px]">
                             {routineHook.tasks.map((task) => (
                                 <Task 
                                     _id={task._id} 
@@ -179,32 +301,33 @@ export default function ContentHolder() {
                                 />
                             ))}
                             {routineHook.tasks.length === 0 && (
-                                <p className="text-gray-400 text-sm text-center py-4">No routine tasks yet. Add one above!</p>
+                                <p className="text-slate-400 dark:text-slate-500 text-sm text-center py-6">No routine tasks yet. Add one above!</p>
                             )}
-                        </div>
+                        </DroppableColumn>
                     </SortableContext>
-                </DndContext>
-            </div>
+                </div>
 
-            {/* Other and WIP Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Other (Backlog) Column */}
-                <div className="bg-gray-50 rounded-lg p-5 border border-gray-200 shadow-xs">
-                    <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
-                        <p className="font-bold text-gray-800 text-lg uppercase tracking-wide">Other (Backlog)</p>
-                        <button
-                            onClick={() => openCreateModal("other")}
-                            className="flex items-center space-x-1 px-3 py-1 bg-blue-600 text-white text-sm font-semibold rounded-md shadow-xs hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                        >
-                            <span>Add Task</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                            </svg>
-                        </button>
-                    </div>
-                    <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={otherHook.handleDragEnd}>
+                {/* Other and WIP Grid columns */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Other (Backlog) Column Card */}
+                    <div className="bg-slate-50 dark:bg-slate-900/60 rounded-lg p-5 border border-slate-200 dark:border-slate-800 shadow-sm border-t-4 border-t-blue-500">
+                        <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+                            <p className="font-bold text-slate-800 dark:text-slate-100 text-lg uppercase tracking-wide flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                                Other (Backlog)
+                            </p>
+                            <button
+                                onClick={() => openCreateModal("other")}
+                                className="flex items-center space-x-1 px-3 py-1 bg-blue-600 text-white text-sm font-semibold rounded-md shadow-xs hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                            >
+                                <span>Add Task</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                            </button>
+                        </div>
                         <SortableContext items={otherHook.taskIds} strategy={verticalListSortingStrategy}>
-                            <div className="flex flex-col gap-3 min-h-[50px]">
+                            <DroppableColumn id="other" className="flex flex-col gap-3 min-h-[120px]">
                                 {otherHook.tasks.map((task) => (
                                     <Task 
                                         _id={task._id} 
@@ -219,30 +342,31 @@ export default function ContentHolder() {
                                     />
                                 ))}
                                 {otherHook.tasks.length === 0 && (
-                                    <p className="text-gray-400 text-sm text-center py-4">No tasks in backlog.</p>
+                                    <p className="text-slate-400 dark:text-slate-500 text-sm text-center py-10">No tasks in backlog.</p>
                                 )}
-                            </div>
+                            </DroppableColumn>
                         </SortableContext>
-                    </DndContext>
-                </div>
-
-                {/* WIP Column */}
-                <div className="bg-gray-50 rounded-lg p-5 border border-gray-200 shadow-xs">
-                    <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-200">
-                        <p className="font-bold text-gray-800 text-lg uppercase tracking-wide">WIP (Work In Progress)</p>
-                        <button
-                            onClick={() => openCreateModal("wip")}
-                            className="flex items-center space-x-1 px-3 py-1 bg-blue-600 text-white text-sm font-semibold rounded-md shadow-xs hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                        >
-                            <span>Add Task</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                            </svg>
-                        </button>
                     </div>
-                    <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={wipHook.handleDragEnd}>
+
+                    {/* WIP Column Card */}
+                    <div className="bg-slate-50 dark:bg-slate-900/60 rounded-lg p-5 border border-slate-200 dark:border-slate-800 shadow-sm border-t-4 border-t-emerald-500">
+                        <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+                            <p className="font-bold text-slate-800 dark:text-slate-100 text-lg uppercase tracking-wide flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                WIP (Work In Progress)
+                            </p>
+                            <button
+                                onClick={() => openCreateModal("wip")}
+                                className="flex items-center space-x-1 px-3 py-1 bg-blue-600 text-white text-sm font-semibold rounded-md shadow-xs hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                            >
+                                <span>Add Task</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="w-4 h-4">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                            </button>
+                        </div>
                         <SortableContext items={wipHook.taskIds} strategy={verticalListSortingStrategy}>
-                            <div className="flex flex-col gap-3 min-h-[50px]">
+                            <DroppableColumn id="wip" className="flex flex-col gap-3 min-h-[120px]">
                                 {wipHook.tasks.map((task) => (
                                     <Task 
                                         _id={task._id} 
@@ -257,83 +381,83 @@ export default function ContentHolder() {
                                     />
                                 ))}
                                 {wipHook.tasks.length === 0 && (
-                                    <p className="text-gray-400 text-sm text-center py-4">No tasks in progress.</p>
+                                    <p className="text-slate-400 dark:text-slate-500 text-sm text-center py-10">No tasks in progress.</p>
                                 )}
-                            </div>
+                            </DroppableColumn>
                         </SortableContext>
-                    </DndContext>
+                    </div>
                 </div>
+
+                {/* Render appropriate Modals */}
+                <Modal 
+                    isOpen={modalState.isOpen && modalState.mode === "create"} 
+                    onClose={closeModal} 
+                    title="Create Task"
+                >
+                    <TaskForm 
+                        mode="create" 
+                        onSubmit={handleCreateSubmit} 
+                        onCancel={closeModal}
+                        initialValues={{ type: modalState.defaultType }}
+                    />
+                </Modal>
+
+                <Modal 
+                    isOpen={modalState.isOpen && modalState.mode === "edit"} 
+                    onClose={closeModal} 
+                    title="Edit Task"
+                >
+                    <TaskForm 
+                        mode="edit" 
+                        onSubmit={handleEditSubmit} 
+                        onCancel={closeModal} 
+                        initialValues={modalState.task}
+                    />
+                </Modal>
+
+                <Modal 
+                    isOpen={modalState.isOpen && modalState.mode === "delete"} 
+                    onClose={closeModal} 
+                    title="Delete Task"
+                >
+                    <DeleteConfirm 
+                        taskName={modalState.task?.name || ""} 
+                        onConfirm={handleDeleteConfirm} 
+                        onCancel={closeModal}
+                    />
+                </Modal>
+
+                {/* Mobile Actions Menu Modal */}
+                <Modal 
+                    isOpen={modalState.isOpen && modalState.mode === "actions"} 
+                    onClose={closeModal} 
+                    title="Manage Task"
+                >
+                    <div className="space-y-3 pb-2 text-center">
+                        <p className="font-semibold text-slate-700 dark:text-slate-300 text-lg border-b border-slate-100 dark:border-slate-700 pb-3 truncate max-w-full">
+                            {modalState.task?.name}
+                        </p>
+                        <button
+                            onClick={() => openEditModal(modalState.task)}
+                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
+                        >
+                            Edit Task
+                        </button>
+                        <button
+                            onClick={() => openDeleteModal(modalState.task)}
+                            className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
+                        >
+                            Delete Task
+                        </button>
+                        <button
+                            onClick={closeModal}
+                            className="w-full py-3 border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold rounded-md transition-colors cursor-pointer"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </Modal>
             </div>
-
-            {/* Render appropriate Modals */}
-            <Modal 
-                isOpen={modalState.isOpen && modalState.mode === "create"} 
-                onClose={closeModal} 
-                title="Create Task"
-            >
-                <TaskForm 
-                    mode="create" 
-                    onSubmit={handleCreateSubmit} 
-                    onCancel={closeModal}
-                    initialValues={{ type: modalState.defaultType }}
-                />
-            </Modal>
-
-            <Modal 
-                isOpen={modalState.isOpen && modalState.mode === "edit"} 
-                onClose={closeModal} 
-                title="Edit Task"
-            >
-                <TaskForm 
-                    mode="edit" 
-                    onSubmit={handleEditSubmit} 
-                    onCancel={closeModal} 
-                    initialValues={modalState.task}
-                />
-            </Modal>
-
-            <Modal 
-                isOpen={modalState.isOpen && modalState.mode === "delete"} 
-                onClose={closeModal} 
-                title="Delete Task"
-            >
-                <DeleteConfirm 
-                    taskName={modalState.task?.name || ""} 
-                    onConfirm={handleDeleteConfirm} 
-                    onCancel={closeModal}
-                />
-            </Modal>
-
-            {/* Mobile Actions Menu Modal */}
-            <Modal 
-                isOpen={modalState.isOpen && modalState.mode === "actions"} 
-                onClose={closeModal} 
-                title="Manage Task"
-            >
-                <div className="space-y-3 pb-2 text-center">
-                    <p className="font-semibold text-gray-700 text-lg border-b border-gray-100 pb-3 truncate max-w-full">
-                        {modalState.task?.name}
-                    </p>
-                    <button
-                        onClick={() => openEditModal(modalState.task)}
-                        className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
-                    >
-                        Edit Task
-                    </button>
-                    <button
-                        onClick={() => openDeleteModal(modalState.task)}
-                        className="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md shadow-xs transition-colors cursor-pointer"
-                    >
-                        Delete Task
-                    </button>
-                    <button
-                        onClick={closeModal}
-                        className="w-full py-3 border border-gray-300 hover:bg-gray-100 text-gray-700 font-semibold rounded-md transition-colors cursor-pointer"
-                    >
-                        Cancel
-                    </button>
-                </div>
-            </Modal>
-        </div>
+        </DndContext>
     );
 }

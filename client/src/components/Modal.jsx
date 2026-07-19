@@ -25,12 +25,12 @@ export default function Modal({ isOpen, onClose, title, children }) {
         onClick={onClose}
       />
       {/* Content wrapper */}
-      <div className="bg-white rounded-lg shadow-2xl p-6 max-w-md w-full mx-4 z-10 transform scale-100 transition-all duration-300 border border-gray-200 text-left">
+      <div className="bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-6 max-w-md w-full mx-4 z-10 transform scale-100 transition-all duration-300 border border-slate-200 dark:border-slate-700 text-left">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-gray-800">{title}</h3>
+          <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">{title}</h3>
           <button 
             onClick={onClose} 
-            className="text-gray-500 hover:text-gray-700 focus:outline-none text-2xl leading-none"
+            className="text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 focus:outline-none text-2xl leading-none cursor-pointer"
             aria-label="Close modal"
           >
             &times;
