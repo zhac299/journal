@@ -14,10 +14,13 @@ export default function CurrentDate() {
     const currentWeek = getCurrentWeek();
 
     return (
-        <div>
-            <p class="font-sans text-lg antialiased font-bold text-left underline underline-offset-4">Week Commencing {currentWeek}</p>
-            <br></br>
-            <p class="font-sans text-base antialiased text-left">The date today is: {today.toDateString()}</p>
+        <div className="space-y-1">
+            <p className="font-sans text-base sm:text-lg antialiased font-bold text-left underline underline-offset-4 text-slate-800 dark:text-slate-100">
+                Week Commencing {currentWeek}
+            </p>
+            <p className="font-sans text-xs sm:text-sm antialiased text-left text-slate-600 dark:text-slate-400">
+                Today is {today.toDateString()}
+            </p>
         </div>
     );
 }

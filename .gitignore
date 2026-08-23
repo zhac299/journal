@@ -3,3 +3,6 @@ node_modules/
 
 # Hide config.env file with login credential to mongodb cluster
 server/config.env
+
+# Hide test output file
+test_output.txt

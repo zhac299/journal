@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "npm test",
+    "test": "jest",
     "build": "npm install && npm install --prefix client && npm run build --prefix client",
     "start": "NODE_ENV=production node server/server.js"
   },
@@ -28,5 +28,13 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "mongodb": "^6.17.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.29.0",
+    "@babel/preset-env": "^7.29.0",
+    "babel-jest": "^30.2.0",
+    "cross-env": "^10.1.0",
+    "jest": "^30.2.0",
+    "supertest": "^7.2.2"
   }
 }
