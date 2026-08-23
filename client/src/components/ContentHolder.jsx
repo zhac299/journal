@@ -269,7 +269,7 @@ export default function ContentHolder() {
             <div className="max-w-4xl mx-auto py-6">
                 
                 {/* Routine Tasks Card Board */}
-                <div className="bg-slate-50 dark:bg-slate-900/60 rounded-lg p-5 border border-slate-200 dark:border-slate-800 shadow-sm mb-8 border-t-4 border-t-purple-500">
+                <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs mb-8 border-t-4 border-t-purple-500">
                     <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
                         <p className="font-bold text-slate-800 dark:text-slate-100 text-lg uppercase tracking-wide flex items-center gap-2">
                             <span className="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
@@ -293,6 +293,7 @@ export default function ContentHolder() {
                                     name={task.name} 
                                     type={task.type} 
                                     done={task.done} 
+                                    cancelled={task.cancelled}
                                     routine={task.routine} 
                                     key={task._id}
                                     onEdit={openEditModal}
@@ -310,7 +311,7 @@ export default function ContentHolder() {
                 {/* Other and WIP Grid columns */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Other (Backlog) Column Card */}
-                    <div className="bg-slate-50 dark:bg-slate-900/60 rounded-lg p-5 border border-slate-200 dark:border-slate-800 shadow-sm border-t-4 border-t-blue-500">
+                    <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs border-t-4 border-t-blue-500">
                         <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
                             <p className="font-bold text-slate-800 dark:text-slate-100 text-lg uppercase tracking-wide flex items-center gap-2">
                                 <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
@@ -334,6 +335,7 @@ export default function ContentHolder() {
                                         name={task.name} 
                                         type={task.type} 
                                         done={task.done} 
+                                        cancelled={task.cancelled}
                                         routine={task.routine} 
                                         key={task._id}
                                         onEdit={openEditModal}
@@ -349,7 +351,7 @@ export default function ContentHolder() {
                     </div>
 
                     {/* WIP Column Card */}
-                    <div className="bg-slate-50 dark:bg-slate-900/60 rounded-lg p-5 border border-slate-200 dark:border-slate-800 shadow-sm border-t-4 border-t-emerald-500">
+                    <div className="bg-white dark:bg-slate-900 rounded-xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs border-t-4 border-t-emerald-500">
                         <div className="flex justify-between items-center mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
                             <p className="font-bold text-slate-800 dark:text-slate-100 text-lg uppercase tracking-wide flex items-center gap-2">
                                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
@@ -373,6 +375,7 @@ export default function ContentHolder() {
                                         name={task.name} 
                                         type={task.type} 
                                         done={task.done} 
+                                        cancelled={task.cancelled}
                                         routine={task.routine} 
                                         key={task._id}
                                         onEdit={openEditModal}

@@ -1,10 +1,11 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 
 import { endpoint } from "../App";
 
-export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenActions }) => {
+export const Task = ({ _id, name, type, done, cancelled, routine, onEdit, onDelete, onOpenActions }) => {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: _id });
   const style = {
@@ -13,12 +14,17 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
   };
 
   const [isDone, setIsDone] = useState(done);
+  const [isCancelled, setIsCancelled] = useState(cancelled || false);
   const [routineState, setRoutineState] = useState(routine || {});
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 
   useEffect(() => {
     setIsDone(done);
   }, [done]);
+
+  useEffect(() => {
+    setIsCancelled(cancelled || false);
+  }, [cancelled]);
 
   useEffect(() => {
     setRoutineState(routine || {});
@@ -36,6 +42,9 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
     e.stopPropagation();
     const newDone = !isDone;
     setIsDone(newDone);
+    if (newDone && isCancelled) {
+      setIsCancelled(false);
+    }
     try {
       const response = await fetch(`${endpoint}${_id}/done`, {
         method: "PATCH",
@@ -45,9 +54,35 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
       if (!response.ok) {
         throw new Error("Failed to update");
       }
+      toast.success(newDone ? "Task completed" : "Task marked incomplete");
     } catch (err) {
       console.error("Error toggling done:", err);
       setIsDone(!newDone); // revert on failure
+      toast.error("Failed to update status");
+    }
+  };
+
+  const handleCancelToggle = async (e) => {
+    e.stopPropagation();
+    const newCancelled = !isCancelled;
+    setIsCancelled(newCancelled);
+    if (newCancelled && isDone) {
+      setIsDone(false);
+    }
+    try {
+      const response = await fetch(`${endpoint}${_id}/cancel`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cancelled: newCancelled }),
+      });
+      if (!response.ok) {
+        throw new Error("Failed to update");
+      }
+      toast.success(newCancelled ? "Task cancelled" : "Task restored");
+    } catch (err) {
+      console.error("Error toggling cancel:", err);
+      setIsCancelled(!newCancelled); // revert on failure
+      toast.error("Failed to update status");
     }
   };
 
@@ -80,7 +115,7 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onOpenActions && onOpenActions({ _id, name, type });
+            onOpenActions && onOpenActions({ _id, name, type, done, cancelled });
           }}
           className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
           title="Task Options"
@@ -94,7 +129,7 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onEdit && onEdit({ _id, name, type });
+              onEdit && onEdit({ _id, name, type, done, cancelled });
             }}
             className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             title="Edit Task"
@@ -106,7 +141,7 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onDelete && onDelete({ _id, name, type });
+              onDelete && onDelete({ _id, name, type, done, cancelled });
             }}
             className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
             title="Delete Task"
@@ -123,24 +158,28 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
   const daysOfWeek = ["M", "T", "W", "T", "F", "S", "S"];
   const dayKeys = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
 
-  // Styles for completed WIP or Routine tasks
+  // Styles for completed or cancelled tasks
   const isCompleted = isDone;
 
   const containerClasses = type === "routine"
-    ? `group flex justify-between items-center rounded-md border shadow-xs cursor-grab p-3 transition-all select-none gap-4
+    ? `group flex justify-between items-center rounded-lg border shadow-2xs cursor-grab p-3 transition-all select-none gap-4
        ${isCompleted 
-         ? "bg-slate-100/60 dark:bg-slate-800/40 opacity-60 border-slate-200 dark:border-slate-800" 
-         : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500"
+         ? "bg-slate-100/70 dark:bg-slate-800/40 opacity-60 border-slate-200 dark:border-slate-800" 
+         : "bg-white dark:bg-slate-800 border-slate-200/90 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50/80 dark:hover:bg-slate-800/90"
        }`
-    : `group flex justify-between items-center w-full max-w-125 min-h-12 rounded-md border shadow-xs cursor-grab py-2.5 px-4 transition-all select-none
-       ${type === "wip" && isCompleted 
-         ? "bg-slate-100/60 dark:bg-slate-800/40 opacity-60 border-slate-200 dark:border-slate-800" 
-         : "bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500"
+    : `group flex justify-between items-center w-full max-w-125 min-h-12 rounded-lg border shadow-2xs cursor-grab py-2.5 px-4 transition-all select-none
+       ${type === "wip" && isDone 
+         ? "bg-emerald-50/40 dark:bg-slate-800/40 opacity-60 border-emerald-200/50 dark:border-slate-800"
+         : type === "wip" && isCancelled
+         ? "bg-rose-50/40 dark:bg-slate-800/40 opacity-60 border-rose-200/50 dark:border-slate-800"
+         : "bg-white dark:bg-slate-800 border-slate-200/90 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50/80 dark:hover:bg-slate-800/90"
        }`;
 
-  const nameClasses = (type === "wip" || type === "routine") && isCompleted
-    ? "text-left font-semibold text-slate-400 dark:text-slate-500 line-through truncate flex-1 pr-2 font-normal"
-    : "text-left font-semibold text-slate-800 dark:text-slate-200 truncate flex-1 pr-2";
+  const nameClasses = (type === "wip" || type === "routine") && isDone
+    ? "text-left font-medium text-slate-400 dark:text-slate-500 line-through truncate flex-1 pr-2"
+    : type === "wip" && isCancelled
+    ? "text-left font-medium text-rose-500/80 dark:text-rose-400/80 line-through truncate flex-1 pr-2"
+    : "text-left font-medium text-slate-800 dark:text-slate-100 truncate flex-1 pr-2";
 
   return (
     <>
@@ -159,7 +198,7 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
           <div className="flex items-center space-x-2 border-l border-slate-200 dark:border-slate-700 pl-4" onPointerDown={(e) => e.stopPropagation()}>
             <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Done?</span>
             <input
-              className="checked:accent-green-500 h-5 w-5 rounded cursor-pointer"
+              className="checked:accent-emerald-500 h-5 w-5 rounded cursor-pointer"
               type="checkbox"
               checked={isDone}
               onChange={handleDoneToggle}
@@ -172,7 +211,7 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
                 <div className="flex flex-col items-center" key={index}>
                   <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-0.5">{day}</span>
                   <input
-                    className="checked:accent-green-500 h-4 w-4 rounded cursor-pointer"
+                    className="checked:accent-emerald-500 h-4 w-4 rounded cursor-pointer"
                     type="checkbox"
                     checked={!!routineState[key]}
                     onChange={(e) => handleDayToggle(key, e)}
@@ -195,13 +234,40 @@ export const Task = ({ _id, name, type, done, routine, onEdit, onDelete, onOpenA
             {name}
           </div>
           {type === "wip" && (
-            <div className="flex items-center space-x-2 border-l border-slate-200 dark:border-slate-700 pl-4 mr-2" onPointerDown={(e) => e.stopPropagation()}>
-              <input
-                className="checked:accent-green-500 h-5 w-5 rounded cursor-pointer"
-                type="checkbox"
-                checked={isDone}
-                onChange={handleDoneToggle}
-              />
+            <div className="flex items-center space-x-1.5 border-l border-slate-200 dark:border-slate-700 pl-3 mr-1" onPointerDown={(e) => e.stopPropagation()}>
+              {/* Complete Check Button */}
+              <button
+                type="button"
+                onClick={handleDoneToggle}
+                className={`p-1 rounded-md transition-all cursor-pointer flex items-center justify-center ${
+                  isDone
+                    ? "text-emerald-600 bg-emerald-100/90 dark:text-emerald-400 dark:bg-emerald-950/60 ring-1 ring-emerald-500/30"
+                    : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                }`}
+                title={isDone ? "Mark as incomplete" : "Mark as completed"}
+                aria-label="Complete task"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                  <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 0 1 .143 1.052l-8 10.5a.75.75 0 0 1-1.127.075l-4.5-4.5a.75.75 0 0 1 1.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 0 1 1.05-.143Z" clipRule="evenodd" />
+                </svg>
+              </button>
+
+              {/* Cancel / Cross-out Button */}
+              <button
+                type="button"
+                onClick={handleCancelToggle}
+                className={`p-1 rounded-md transition-all cursor-pointer flex items-center justify-center ${
+                  isCancelled
+                    ? "text-rose-600 bg-rose-100/90 dark:text-rose-400 dark:bg-rose-950/60 ring-1 ring-rose-500/30"
+                    : "text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                }`}
+                title={isCancelled ? "Restore task" : "Cancel / Cross out task"}
+                aria-label="Cancel task"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
+                  <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                </svg>
+              </button>
             </div>
           )}
           {actions}

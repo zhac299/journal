@@ -109,6 +109,15 @@ describe('Tasks API', () => {
         expect(res.body.name).toBe('T1'); // returns mocked findOne task
     });
 
+    it('PATCH /tasks/:id/cancel should update cancelled status', async () => {
+        const res = await request(app)
+            .patch('/tasks/1/cancel')
+            .send({ cancelled: true });
+
+        expect(res.statusCode).toEqual(200);
+        expect(res.body.modifiedCount).toBe(1);
+    });
+
     it('DELETE /tasks/:id should delete task', async () => {
         const res = await request(app)
             .delete('/tasks/1');

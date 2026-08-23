@@ -49,11 +49,36 @@ router.patch("/:id/done", async (req, res) => {
     const query = { _id: new ObjectId(req.params.id) };
     const { done } = req.body;
 
-    let result = await collection.updateOne(query, { $set: { done: done } });
+    let update = { $set: { done: !!done } };
+    if (done) {
+      update.$set.cancelled = false;
+    }
+
+    let result = await collection.updateOne(query, update);
     res.status(200).send(result);
   } catch (err) {
     console.error(err);
     res.status(500).send("Error updating done status");
+  }
+});
+
+// PATCH - toggle cancelled status
+router.patch("/:id/cancel", async (req, res) => {
+  try {
+    let collection = await db.collection("tasks");
+    const query = { _id: new ObjectId(req.params.id) };
+    const { cancelled } = req.body;
+
+    let update = { $set: { cancelled: !!cancelled } };
+    if (cancelled) {
+      update.$set.done = false;
+    }
+
+    let result = await collection.updateOne(query, update);
+    res.status(200).send(result);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error updating cancelled status");
   }
 });
 
@@ -89,6 +114,7 @@ router.post("/", async (req, res) => {
       name,
       type,
       done: false,
+      cancelled: false,
       position,
     };
 
