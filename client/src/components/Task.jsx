@@ -162,12 +162,12 @@ export const Task = ({ _id, name, type, done, cancelled, routine, onEdit, onDele
   const isCompleted = isDone;
 
   const containerClasses = type === "routine"
-    ? `group flex justify-between items-center rounded-lg border shadow-2xs cursor-grab p-3 transition-all select-none gap-4
+    ? `group flex flex-col sm:flex-row justify-between items-start sm:items-center rounded-xl border shadow-2xs cursor-grab p-3 sm:p-3.5 transition-all select-none gap-2.5 sm:gap-4 touch-manipulation
        ${isCompleted 
          ? "bg-slate-100/70 dark:bg-slate-800/40 opacity-60 border-slate-200 dark:border-slate-800" 
          : "bg-white dark:bg-slate-800 border-slate-200/90 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50/80 dark:hover:bg-slate-800/90"
        }`
-    : `group flex justify-between items-center w-full max-w-125 min-h-12 rounded-lg border shadow-2xs cursor-grab py-2.5 px-4 transition-all select-none
+    : `group flex justify-between items-center w-full min-h-12 rounded-xl border shadow-2xs cursor-grab py-2.5 px-3 sm:px-4 transition-all select-none touch-manipulation
        ${type === "wip" && isDone 
          ? "bg-emerald-50/40 dark:bg-slate-800/40 opacity-60 border-emerald-200/50 dark:border-slate-800"
          : type === "wip" && isCancelled
@@ -191,36 +191,62 @@ export const Task = ({ _id, name, type, done, cancelled, routine, onEdit, onDele
           {...attributes}
           {...listeners}
         >
-          <div className={nameClasses}>
-            {name}
+          {/* Top section on mobile, left section on desktop */}
+          <div className="flex items-center justify-between w-full sm:w-auto sm:flex-1 min-w-0 pr-0 sm:pr-2">
+            <div className={nameClasses}>
+              {name}
+            </div>
+            {/* On mobile, show Done + actions together in top row */}
+            <div className="flex items-center space-x-2 sm:hidden" onPointerDown={(e) => e.stopPropagation()}>
+              <div className="flex items-center space-x-1.5 pl-2 border-l border-slate-200 dark:border-slate-700">
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Done?</span>
+                <input
+                  className="checked:accent-emerald-500 h-4.5 w-4.5 rounded cursor-pointer"
+                  type="checkbox"
+                  checked={isDone}
+                  onChange={handleDoneToggle}
+                />
+              </div>
+              {actions}
+            </div>
           </div>
-          {/* Checkbox area - NOT draggable, clicks work normally */}
-          <div className="flex items-center space-x-2 border-l border-slate-200 dark:border-slate-700 pl-4" onPointerDown={(e) => e.stopPropagation()}>
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Done?</span>
-            <input
-              className="checked:accent-emerald-500 h-5 w-5 rounded cursor-pointer"
-              type="checkbox"
-              checked={isDone}
-              onChange={handleDoneToggle}
-            />
+
+          {/* Days of week + Desktop Done & Actions */}
+          <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-100 dark:border-slate-700/60" onPointerDown={(e) => e.stopPropagation()}>
+            {/* Desktop Done Checkbox */}
+            <div className="hidden sm:flex items-center space-x-2 border-l border-slate-200 dark:border-slate-700 pl-3 sm:pl-4">
+              <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Done?</span>
+              <input
+                className="checked:accent-emerald-500 h-5 w-5 rounded cursor-pointer"
+                type="checkbox"
+                checked={isDone}
+                onChange={handleDoneToggle}
+              />
+            </div>
+
+            {/* 7 Weekday checkboxes */}
+            <div className="flex items-center justify-between sm:justify-start w-full sm:w-auto sm:space-x-2.5 sm:border-l border-slate-200 dark:border-slate-700 sm:pl-4">
+              {daysOfWeek.map((day, index) => {
+                const key = dayKeys[index];
+                return (
+                  <div className="flex flex-col items-center flex-1 sm:flex-none px-0.5" key={index}>
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-0.5">{day}</span>
+                    <input
+                      className="checked:accent-emerald-500 h-4 w-4 sm:h-4 sm:w-4 rounded cursor-pointer"
+                      type="checkbox"
+                      checked={!!routineState[key]}
+                      onChange={(e) => handleDayToggle(key, e)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop Actions */}
+            <div className="hidden sm:block">
+              {actions}
+            </div>
           </div>
-          <div className="flex items-center space-x-3 border-l border-slate-200 dark:border-slate-700 pl-4" onPointerDown={(e) => e.stopPropagation()}>
-            {daysOfWeek.map((day, index) => {
-              const key = dayKeys[index];
-              return (
-                <div className="flex flex-col items-center" key={index}>
-                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase mb-0.5">{day}</span>
-                  <input
-                    className="checked:accent-emerald-500 h-4 w-4 rounded cursor-pointer"
-                    type="checkbox"
-                    checked={!!routineState[key]}
-                    onChange={(e) => handleDayToggle(key, e)}
-                  />
-                </div>
-              );
-            })}
-          </div>
-          {actions}
         </div>
       ) : (
         <div
@@ -239,7 +265,7 @@ export const Task = ({ _id, name, type, done, cancelled, routine, onEdit, onDele
               <button
                 type="button"
                 onClick={handleDoneToggle}
-                className={`p-1 rounded-md transition-all cursor-pointer flex items-center justify-center ${
+                className={`p-1.5 rounded-md transition-all cursor-pointer flex items-center justify-center ${
                   isDone
                     ? "text-emerald-600 bg-emerald-100/90 dark:text-emerald-400 dark:bg-emerald-950/60 ring-1 ring-emerald-500/30"
                     : "text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
@@ -256,7 +282,7 @@ export const Task = ({ _id, name, type, done, cancelled, routine, onEdit, onDele
               <button
                 type="button"
                 onClick={handleCancelToggle}
-                className={`p-1 rounded-md transition-all cursor-pointer flex items-center justify-center ${
+                className={`p-1.5 rounded-md transition-all cursor-pointer flex items-center justify-center ${
                   isCancelled
                     ? "text-rose-600 bg-rose-100/90 dark:text-rose-400 dark:bg-rose-950/60 ring-1 ring-rose-500/30"
                     : "text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30"

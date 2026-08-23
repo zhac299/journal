@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { closestCorners, DndContext, PointerSensor, useSensor, useSensors, useDroppable } from '@dnd-kit/core';
+import { closestCorners, DndContext, MouseSensor, TouchSensor, useSensor, useSensors, useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import toast from 'react-hot-toast';
 
@@ -34,9 +34,15 @@ export default function ContentHolder() {
     });
 
     const sensors = useSensors(
-        useSensor(PointerSensor, {
+        useSensor(MouseSensor, {
             activationConstraint: {
                 distance: 8,
+            },
+        }),
+        useSensor(TouchSensor, {
+            activationConstraint: {
+                delay: 200,
+                tolerance: 6,
             },
         })
     );
